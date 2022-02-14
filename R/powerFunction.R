@@ -1,8 +1,4 @@
-round_df <- function(df, digits = 3) {
-  nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
-  df[,nums] <- round(df[,nums], digits = digits)
-  (df)
-}
+
 
 powerFunction <- function(studyDesign, N, means, SD, labels, wcorr, alpha) {
   if (!requireNamespace("Superpower", quietly = TRUE)) {
@@ -10,6 +6,11 @@ powerFunction <- function(studyDesign, N, means, SD, labels, wcorr, alpha) {
       "Package \"Superpower\" must be installed to use this function.",
       call. = FALSE
     )
+  }
+  round_df <- function(df, digits = 3) {
+    nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
+    df[,nums] <- round(df[,nums], digits = digits)
+    (df)
   }
 
   invisible(capture.output(design_result <- ANOVA_design(design = studyDesign, n = N,  mu = means, sd = SD, labelnames = labels, r = wcorr, plot = F)))
