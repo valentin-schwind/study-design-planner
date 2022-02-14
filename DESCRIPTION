@@ -1,0 +1,10 @@
+Package: study-design-planner
+Type: Package
+Title: Study Design planner
+Version: 1.0
+Date: 2022-02-14
+Author: Valentin Schwind
+Maintainer: Valentin Schwind <valentin.schwind@fb2.fra-uas.de>
+Description: 
+License: Apache2
+LazyData: true
