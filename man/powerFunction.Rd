@@ -1,5 +1,5 @@
-\name{Power Function}
-\alias{Power Function}
+\name{powerFunction}
+\alias{powerFunction}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Power Function for ANOVA
@@ -8,12 +8,30 @@ Power Function for ANOVA
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-Power Function(x)
+powerFunction(studyDesign, N, means, SD, labels, wcorr, alpha)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{
-%%     ~~Describe \code{x} here~~
+\item{studyDesign}{
+%%     ~~The study design e.g. String 2w*2b~~
+}
+\item{N}{
+%%     ~~Number samples~~
+}
+\item{means}{
+%%     ~~Array of mean values~~
+}
+\item{SD}{
+%%     ~~Common standard deviation~~
+}
+\item{labels}{
+%%     ~~Array of labels~~
+}
+\item{wcorr}{
+%%     ~~Within correlation~~
+}
+\item{alpha}{
+%%     ~~Alpha value~~
 }
 }
 \details{
