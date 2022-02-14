@@ -22,7 +22,8 @@ Imports:
     dplyr,
     magrittr,
     tidyselect,
-    tidyr
+    tidyr,
+    jsonlite
 Suggests: 
     knitr,
     rmarkdown,

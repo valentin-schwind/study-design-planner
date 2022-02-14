@@ -1,5 +1,10 @@
-powerFunction <- function(studyDesign, N, means, SD) {
+round_df <- function(df, digits = 3) {
+  nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
+  df[,nums] <- round(df[,nums], digits = digits)
+  (df)
+}
 
+powerFunction <- function(studyDesign, N, means, SD, labels, wcorr, alpha) {
   if (!requireNamespace("Superpower", quietly = TRUE)) {
     stop(
       "Package \"Superpower\" must be installed to use this function.",
@@ -7,11 +12,8 @@ powerFunction <- function(studyDesign, N, means, SD) {
     )
   }
 
-  design_result <- Superpower::ANOVA_design(design = studyDesign, n = N,  mu = means, sd = SD, r = 0.5, plot = F)
+  invisible(capture.output(design_result <- ANOVA_design(design = studyDesign, n = N,  mu = means, sd = SD, labelnames = labels, r = wcorr, plot = F)))
+  exact_result <- invisible(capture.output(Superpower::ANOVA_exact(design_result, alpha_level = alpha)))
 
-  exact_result <- Superpower::ANOVA_exact(design_result, alpha_level = 0.05)
-
-  invisible()
-
-  return (list(min(exact_result$main_results$power),max(exact_result$main_results$power)))
+  jsonlite::toJSON(round_df(exact_result$main_results))
 }

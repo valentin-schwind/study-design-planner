@@ -47,7 +47,7 @@ Power Function(x)
 ##--	or do  help(data=index)  for the standard data sets.
 
 ## The function is currently defined as
-function (x)
+function(studyDesign, N, means, SD, labels, wcorr, alpha)
 {
   }
 }
