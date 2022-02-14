@@ -10,5 +10,5 @@ License: MIT License
 Encoding: UTF-8
 LazyData: true
 Imports:
-    Superpower (>=0.1.2)
+    Superpower
 Remotes: git::https://github.com/arcaldwell49/Superpower
