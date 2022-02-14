@@ -1,7 +1,7 @@
 Package: studydesignplanner
 Type: Package
 Title: StudyDesignPlanner
-Version: 0.1.0
+Version: 0.1.1
 Author: Valentin Schwind
 Maintainer: The package maintainer <mail@vali.de>
 Description: A number of R procudures for study and statistical test planning.

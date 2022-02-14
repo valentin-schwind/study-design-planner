@@ -67,7 +67,7 @@ powerFunction(studyDesign, N, means, SD, labels, wcorr, alpha)
 ## The function is currently defined as
 function(studyDesign, N, means, SD, labels, wcorr, alpha)
 {
-  }
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):
