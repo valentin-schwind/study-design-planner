@@ -1,5 +1,1 @@
-export(hello)
-export(randomplot)
-export(readcsvnew)
-export(printsummary)
-export(bostonhist)
+export(powerFunction)
