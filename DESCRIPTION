@@ -31,3 +31,4 @@ Suggests:
     covr,
     jmvcore,
     spelling
+Remotes: git::https://github.com/arcaldwell49/Superpower
