@@ -9,5 +9,5 @@ Description: A number of R procudures for study and statistical test planning
 License: MIT License
 Encoding: UTF-8
 LazyData: true
-Import:
+Imports:
     Superpower (>=0.1.2)
