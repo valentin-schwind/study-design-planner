@@ -5,8 +5,13 @@ powerFunction <- function(studyDesign, N, means, SD, labels, wcorr, alpha) {
       call. = FALSE
     )
   }
-  invisible(Superpower::design_result <- ANOVA_design(design = studyDesign, n = N,  mu = means, sd = SD, labelnames = labels, r = wcorr, plot = F))
-  invisible(Superpower::exact_result <- ANOVA_exact(design_result, alpha_level = alpha))
-  return (list(min(exact_result$main_results$power),max(exact_result$main_results$power)))
+  round_df <- function(df, digits = 3) {
+    nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
+    df[,nums] <- round(df[,nums], digits = digits)
+    (df)
+  }
 
+  invisible(capture.output(design_result <- Superpower::ANOVA_design(design = studyDesign, n = N,  mu = means, sd = SD, labelnames = labels, r = wcorr, plot = F)))
+  invisible(capture.output(exact_result <- Superpower::ANOVA_exact(design_result, alpha_level = alpha)))
+  round_df(exact_result$main_results)
 }
