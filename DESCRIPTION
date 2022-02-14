@@ -4,8 +4,8 @@ Title: StudyDesignPlanner
 Version: 0.1.0
 Author: Valentin Schwind
 Maintainer: The package maintainer <mail@vali.de>
-Description: A number of R procudures for study and statistical test planning
-    Includes a power function based on the Superpower library
+Description: A number of R procudures for study and statistical test planning.
+    Includes a power function based on the Superpower library.
 License: MIT License
 Encoding: UTF-8
 LazyData: true
