@@ -10,4 +10,24 @@ License: MIT License
 Encoding: UTF-8
 LazyData: true
 Imports:
-    Superpower
+    Superpower,
+    mvtnorm,
+    MASS,
+    afex,
+    emmeans,
+    ggplot2,
+    gridExtra,
+    reshape2,
+    stats,
+    dplyr,
+    magrittr,
+    tidyselect,
+    tidyr
+Suggests: 
+    knitr,
+    rmarkdown,
+    pwr,
+    testthat,
+    covr,
+    jmvcore,
+    spelling
