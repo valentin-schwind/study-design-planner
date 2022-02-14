@@ -11,4 +11,3 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     Superpower
-Remotes: git::https://github.com/arcaldwell49/Superpower
