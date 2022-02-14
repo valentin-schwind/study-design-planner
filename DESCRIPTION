@@ -1,6 +1,6 @@
 Package: studydesignplanner
 Type: Package
-Title: R Procudures for Study and Statistical Test Planning
+Title: StudyDesignPlanner
 Version: 0.1.0
 Author: Valentin Schwind
 Maintainer: The package maintainer <mail@vali.de>
@@ -9,4 +9,5 @@ Description: A number of R procudures for study and statistical test planning
 License: MIT License
 Encoding: UTF-8
 LazyData: true
-Import: Superpower (>=0.1.2)
+Import:
+    Superpower
