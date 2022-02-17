@@ -22,11 +22,11 @@ Imports:
     dplyr,
     magrittr,
     tidyselect,
-    tidyr
+    tidyr,
+    pwr
 Suggests: 
     knitr,
     rmarkdown,
-    pwr,
     testthat,
     covr,
     jmvcore,

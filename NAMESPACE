@@ -1,1 +1,2 @@
 exportPattern("powerFunction")
+exportPattern("sampleSize")
