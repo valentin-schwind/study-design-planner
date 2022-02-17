@@ -11,7 +11,7 @@ powerFunction <- function(studyDesign, N, means, SD, labels, wcorr, alpha) {
     (df)
   }
 
-  quiet(design_result <- Superpower::ANOVA_design(design = studyDesign, n = N,  mu = means, sd = SD, labelnames = labels, r = wcorr, plot = F))
-  quiet(exact_result <- Superpower::ANOVA_exact(design_result, alpha_level = alpha))
-  jsonlite::toJSON(round_df(exact_result$main_results))
+  invisible(capture.output(design_result <- Superpower::ANOVA_design(design = studyDesign, n = N,  mu = means, sd = SD, labelnames = labels, r = wcorr, plot = F)))
+  invisible(capture.output(exact_result <- Superpower::ANOVA_exact(design_result, alpha_level = alpha)))
+  return(jsonlite::toJSON(round_df(exact_result$main_results)))
 }
