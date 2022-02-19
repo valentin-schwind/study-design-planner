@@ -1,4 +1,4 @@
-powerFunction <- function(studyDesign, N, means, SD, labels, wcorr, alpha) {
+powerANOVA <- function(studyDesign, N, means, SD, labels, wcorr, alpha) {
   if (!requireNamespace("Superpower", quietly = TRUE)) {
     stop(
       "Package \"Superpower\" must be installed to use this function.",
