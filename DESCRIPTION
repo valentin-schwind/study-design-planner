@@ -23,11 +23,16 @@ Imports:
     magrittr,
     tidyselect,
     tidyr,
-    pwr
+    pwr,
+    graphics
 Suggests: 
     knitr,
     rmarkdown,
     testthat,
     covr,
     jmvcore,
-    spelling 
+    spelling,
+    ggplot2,
+    scales,
+    knitr,
+    rmarkdown
