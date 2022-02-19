@@ -5,5 +5,5 @@ powerRegression <- function(ivs, participants, fsquared, alpha) {
       call. = FALSE
     )
   }
-  return(pwr::pwr.f2.test(u = ivs, v = participants - ivs - 1, f2 = fsquared, sig.level = alpha)$power)
+  return(jsonlite::toJSON(pwr::pwr.f2.test(u = ivs, v = participants - ivs - 1, f2 = fsquared, sig.level = alpha)))
 }
