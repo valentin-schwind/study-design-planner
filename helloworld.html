@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Hello</title>
+		<script src="js/jquery-3.6.0.min.js"></script>
+		<script src="js/opencpu-0.5.js"></script>
+	</head>
+	<body>
+		<button id="submitbutton" type="button">Call R</button>
+		<pre><code id="output"></code></pre>
+	</body>
+	<script>
+	
+	ocpu.seturl("//cloud.opencpu.org/ocpu/library/base/R")
+	ocpu.seturl("//cloud.opencpu.org/ocpu/library/stats/R")
+	
+	$("#submitbutton").on("click", function(){
+
+		var code = "return power.anova.test(groups = a, n = b, between.var = c, within.var = d)"
+		var mysnippet = new ocpu.Snippet(code);
+
+		//disable button
+		$("button").attr("disabled", "disabled");
+
+		//perform the request
+		var req = ocpu.call("do.call", {
+			what : mysnippet,
+			args : {
+				a : 5,
+				b : 4,
+				c : 3,
+				d : 2
+			}
+			}, function(output){
+				$("#output").text(output); 
+			});
+
+			//if R returns an error, alert the error message
+			req.fail(function(){
+			alert("Server error: " + req.responseText);
+			});      
+
+			req.always(function(){
+			$("button").removeAttr("disabled");    
+		});
+	});     
+	</script>
+</html>

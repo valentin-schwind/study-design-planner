@@ -1,0 +1,1296 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<!-- Required meta tags -->
+	<meta charset="iso-8859-1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="author" content="Valentin Schwind">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/bootstrap-table.min.css" />  
+	<link rel="stylesheet" href="css/bootstrap-icons.css">
+	<link rel="stylesheet" href="css/style.css" />  
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+	<meta property="og:site_name" content="Study Design and Statistical Test Planner">	
+	<title>Study Design Generator</title>	
+</head>
+ <body class="transparent">
+	<script src="js/countryList.js"></script> 
+	<script src="js/jquery-3.6.0.min.js"></script>
+	<script src="js/jquery-ui.js"></script>    
+	<script src="js/bootstrap.bundle.min.js"></script>
+	<script src="js/bootstrap-table.min.js"></script>
+	<script src="js/bootstrap-table-zh-CN.min"></script>
+	<script src="js/seedrandom.min.js"></script> 
+	<script src="js/statistics.min.js"></script> 
+	<script src="js/opencpu-0.5.js"></script>
+    
+	<div id="mainFrame" class="vertical-center">
+		<div id="demographicsPage" class="whiteBox container rounded">
+			
+				<div id="input">
+                    <div class="row">
+                        <div class="col mt-4">
+                            <a href="https://hci-studies.org"><img src="img/frankfurtlogo.png" class="float-end me-3" width="140px" alt="Interaction Lab Logo"></a>
+                        </div>
+                    </div>
+                    <div class="row mt-3 align-items-center">
+                        <div class="col">
+                            <h3 id="demographicsTitle">Study Design and Statistical Test Planner</h3>
+                        </div>
+                    </div>
+                    <hr /> 
+					<form id="IVForm" class="form-horizontal"  action="javascript:generate(this);">
+						<div class="row mt-1 align-items-center">
+							<div class="col-4"><span id="selectIVText">Add your independent variables (IV)?</span><span class="text-danger">*</span><br /></div>
+							<div class="col-2"><input class="form-control" name="nameIV" required></input></div>
+							<div class="col-5"><select class="form-control" name="selectIVType" required></select></div>
+							<div class="col-1"><button class="btn btn-primary btn-md float-right" type="submit"  id="addIV">Add</button></div>
+						</div> 
+						 <div class="row mt-1 align-items-center" id="withinIV" >
+							<div class="col-4"></div>
+							<div class="col-2 "><span class="align-items-center" >IV design</span></div>
+							<div class="col-5"><select class="form-control" name="selectIVwithin" required></select></div>
+						</div> 
+						 <div class="row mt-1 align-items-center" id="levelsIV" >
+							<div class="col-4"></div>
+							<div class="col-2 "><span class="align-items-center" >with levels</span></div>
+							<div class="col-5"><input class="form-control" name="enterLevelsIV" required></input></div>
+						</div> 
+						<div class="row mt-1 align-items-center">  
+							<div class="col-4 mt-3 me-0"></div>   
+							<div class="col-8 mt-1 ms-0 "><ul class="ms-0 " id="listIV"></ul></div>  
+						</div> 
+					</form>
+					<form id="DVForm" class="form-horizontal" action="javascript:generate(this);">
+						<div class="row mt-1 align-items-center" id="rowDV">
+							<div class="col-4"><span id="selectDVText">Add your dependent variables (DV)?</span><span class="text-danger">*</span><br /></div>
+							<div class="col-2"><input class="form-control" name="nameDV" ></input></div>
+							<div class="col-5"><select class="form-control" name="selectDVType" ></select></div>
+							<div class="col-1"><button class="btn btn-primary btn-md float-right"  id="addDV">Add</button></div> 
+							<div class="col-4 me-0"></div>   
+							<div class="col-8 mt-1 ms-0"><ul class="ms-0" id="listDV"></ul></div> 
+						</div> 
+					</form>
+					
+					<div class="row mt-1 " id="cellVARIANCE">  						
+						<div class="col-4 mt-2 "><span>Highest standard deviation of your DVs (in %):</span><br /></div>
+						<div class="col-8 mt-3 " ><form name="sampleForm">
+							<input type="range" name="varianceInputName" style="width: 300px" id="varianceInputId" value="0.15" min="0" max="1" step="0.01" oninput="varianceOutputId.value = Math.floor((varianceInputId.value * 100),0) + ' %'"> 
+							<output name="varianceOutputName" id="varianceOutputId">15 %</output>
+							<!--<output name="varianceOutputLabelName" id="varianceOutputLabelId">medium</output>-->
+						</form></div> 
+					</div> 
+					<div class="row mt-1 " id="cellEFFECTSIZE">  						
+						<div class="col-4 mt-2 "><span>Smallest estimated DV mean difference (in %):</span><br /></div>
+						<div class="col-8 mt-3 " ><form name="sampleForm">
+							<input type="range" name="meanDeltaInputName" style="width: 300px" id="meanDeltaInputId" value="0.10" min="0.01" max="1" step="0.01" oninput="effectsizeOutputId.value = Math.floor((meanDeltaInputId.value * 100),0) + ' %'"> 
+							<output name="effectsizeOutputName" id="effectsizeOutputId">10 %</output>
+							<!--<output name="effectsizeOutputLabelName" id="effectsizeOutputLabelId">medium</output>-->
+						</form></div> 
+					</div>  
+					<div class="row" id="cellMANOVA">  
+						<div class="col-4"><span></span><br /></div>
+						<div class="col-8 ms-0" ><input type="checkbox" class="form-check-input me-2" name="manovaCheckBox" id="manovaCheckBox"><label class="form-check-label" for="manovaCheckBox">Include test for effects <i>across</i> all DVs (MANOVA avoids Type-1 errors with too many DVs)</label></div>
+					</div> 
+					<div class="row" id="cellEQUIVALENCE">  						
+						<div class="col-4"><span></span><br /></div>
+						<div class="col-8 ms-0" ><input type="checkbox" class="form-check-input me-2" name="equivalenceCheckBox" id="equivalenceCheckBox"><label class="form-check-label" for="equivalenceCheckBox">test for equivalence (noninferiority)</label></div>
+					</div> 
+					<div class="row mt-1 " id="cellSAMPLES">  						
+						<div class="col-4 mt-2 "><span>Subjects (N estimated by <a target="_blank" href='https://onlinelibrary.wiley.com/doi/10.1002/sim.4780110811'>Lehr's "Rule of 16")</a>:</span><br /></div>
+						<div class="col-8 mt-3 " ><form name="sampleForm">
+							<input type="range" name="samplesInputName" style="width: 300px" id="samplesInputId" value="24" min="0" max="200" oninput="samplesOutputId.value = samplesInputId.value">
+							<output name="samplesOutputName" id="samplesOutputId">24</output>
+						</form></div> 
+					</div> 
+					<hr /> 
+					<div id="resultsPanel">
+						<div class="row mb-2 " id="rowWAIT">  
+							<div class="col-12 mt-2 me-0 mb-1 "><span><h5 class="text-center">Please wait...</h5></span></div> 
+						</div>						
+						<div class="row mb-2 " id="rowES">  
+							<div class="col-12 mt-2 me-0 mb-1 "><span><h5>Statistical Power and Effect Sizes:</h5></span></div>
+							<div class="col-12 mt-2 ms-0 mb-1 "><span id="power"></span></div>    
+						</div>
+						<div class="row mb-2 " id="rowED">  
+							<div class="col-12 mt-2 me-0 mb-1 "><span><h5>Instructions for your experimental design:</h5></span></div>
+							<div class="col-12 mt-2 ms-0 mb-1 "><span id="design"></span></div>    
+						</div>
+						<div class="row mb-2 " id="rowST">  
+							<div class="col-12 mt-2 me-0 mb-1 "><span><h5>Instructions for your statistical test(s):</h5></span></div>
+							<div class="col-12 mt-2 ms-0 mb-1 "><div id="results"></div></div>    
+						</div> 
+						<div class="row mt-2 itemRow">
+							<div class="col" > 
+								<a id="btnExample2x3Within" class="btn btn-secondary btn-md float-left me-3 " >Example 2x3 Within Design</a> 
+								<a id="btnExample2x4Mixed" class="btn btn-secondary btn-md float-left me-3 " >Example 2x3 Mixed-Design</a> 
+								<a id="btnExampleRegression" class="btn btn-secondary btn-md float-left me-3 " >Example Regression</a> 
+								<!--<button id="btnGenerate" class="btn btn-primary btn-md float-right" type="Submit">Generate</button> -->
+							</div>
+						</div> 
+                    </div> 
+				<div class="row mt-2 mb-2 itemRow" id="githublink">
+					<div class="col" > 
+						<a href="https://github.com/valentin-schwind/study-design-planner">Source Code on github</a>
+					</div>
+				</div>
+				
+			
+		</div> 
+	</div>
+ 
+	<script>
+		var debug = false;
+		var IVs = 0;
+		var DVs = 0;
+		var manualEffectSizeUpdate = false;
+		var manualSubjectUpdate = false; 
+		var serverANOVARequestRunning = false; 
+		var serverRegressionRequestRunning = false; 
+		var serverSAMPLERequestRunning = false; 
+		var studyDesign;
+		var runningLocal = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "")
+		
+		if(!runningLocal) {
+			ocpu.seturl("//cloud.opencpu.org/ocpu/library/base/R")
+			ocpu.seturl("//cloud.opencpu.org/ocpu/library/stats/R")
+			ocpu.seturl("//valentin-schwind.ocpu.io/study-design-planner/R") 
+			console.log("RUNNING IN ONLINE MODE")
+		} else {
+			console.log("RUNNING IN LOCAL MODE")
+		}
+		
+		function resetStudyDesign() {
+			studyDesign = {
+				"IVs" : [],
+				"DVs" : [],  
+				"MANOVA" : false,
+				"betweenIVs" : [],
+				"withinIVs" : [],
+				"allBetweenLevels" : [],
+				"allWithinLevels" : [],			
+				"allConditions" : [],			
+				"allCombinations" : []			
+			}	
+		}
+		 
+		$(document).ready(function() {  
+			resetStudyDesign();
+			
+			$("#levelsIV").hide();
+			$("#withinIV").hide();
+			
+			$("#rowDV").hide();
+			$("#rowED").hide();
+			$("#rowES").hide();
+			$("#rowST").hide(); 
+			$("#rowWAIT").hide();
+			
+			$("#cellMANOVA").hide();
+			$("#cellEQUIVALENCE").hide();
+			$("#cellSAMPLES").hide();
+			$("#cellVARIANCE").hide();
+			$("#cellEFFECTSIZE").hide();
+			
+			$("input[name='nameDV']").attr('placeholder', "Enter DV name...");
+			$("input[name='enterLevelsIV']").attr('placeholder', "Enter levels (comma-separated)");
+			$("input[name='nameIV']").attr('placeholder', "Enter IV name..."); 
+			
+			$("select[name='selectIVType']").append(new Option('Please select', ""));
+            $("select[name='selectIVType']").append(new Option('Nominal (types, categories, gender, animals, ZIP codes,...)', "N")); 
+            $("select[name='selectIVType']").append(new Option('Ordinal (marks, ranks, single Likert items, counts, ...)', "O")); 
+            $("select[name='selectIVType']").append(new Option('Interval (arbitrary zero: distance, time, IQ, temperature in C, ...)', "I")); 
+            $("select[name='selectIVType']").append(new Option('Ratio (fixed zero: age, volume, temperature in K, scores, bandwidth,...)', "R")); 
+			//$("select[name='selectIVType'] option[value='O']").attr("disabled","disabled");
+			//$("select[name='selectIVType'] option[value='I']").attr("disabled","disabled");
+			//$("select[name='selectIVType'] option[value='R']").attr("disabled","disabled");
+			
+			$("select[name='selectDVType']").append(new Option('Please select', ""));
+            $("select[name='selectDVType']").append(new Option('Nominal (types, categories, gender, animals, ZIP codes,...)', "N")); 
+            $("select[name='selectDVType']").append(new Option('Ordinal (marks, ranks, single Likert items, counts, ...)', "O")); 
+            $("select[name='selectDVType']").append(new Option('Interval (arbitrary zero: distance, time, IQ, temperature in C, ...)', "I")); 
+            $("select[name='selectDVType']").append(new Option('Ratio (fixed zero: age, volume, temperature in K, scores, bandwidth,...)', "R"));
+			$("select[name='selectDVType'] option[value='N']").attr("disabled","disabled");    
+			
+			$("select[name='selectIVwithin']").append(new Option('Please select', ""));
+			$("select[name='selectIVwithin']").append(new Option('within-subject (subjects are all assigned to this IV)', "within"));
+			$("select[name='selectIVwithin']").append(new Option('between-subject (subjects are separated into groups)', "between"));
+			
+			$("input[name='manovaCheckBox']").prop( 'checked', false ); 			
+			
+			$("#btnExample2x3Within").click(function() { example2x3Within(); }); 		
+			$("#btnExample2x4Mixed").click(function()  { example2x4Mixed(); }); 		
+			$("#btnExampleRegression").click(function() { exampleRegression(); }); 		
+			
+			$("select[name='selectIVType']").change(function() { 
+				if($("select[name='selectIVType']").val() == "N"){
+					$("#levelsIV").show();
+					$("#withinIV").show();
+				} else {
+					$("#levelsIV").hide();
+					$("#withinIV").hide();
+				}
+			});	
+			
+			$("input[name='manovaCheckBox']").change(function() { 
+				displaySTrow();
+			});
+			
+			$("input[name='normalityCheckBox']").change(function() { 
+				displaySTrow();
+			}); 
+			
+			$("#samplesInputId").change(function() { 
+				manualSubjectUpdate = true;
+				displaySTrow();
+				manualSubjectUpdate = false;
+			});
+			
+			$("#varianceInputId").change(function() { 
+				manualEffectSizeUpdate = true; 
+				displaySTrow();
+				manualEffectSizeUpdate = false;
+			});
+			
+			$("#meanDeltaInputId").change(function() { 
+				manualEffectSizeUpdate = true; 
+				displaySTrow();
+				manualEffectSizeUpdate = false;
+			});
+			
+			$("#addIV").click(function() { 
+				IVs++;
+				$("input[name='nameIV']").prop("required", true); 
+				$("select[name='selectIVType']").prop("required", true); 		
+				
+				if($("input[name='nameIV']").val() == "") return;
+				if($("select[name='selectIVType']").val() == "") return;
+				
+				if($("select[name='selectIVType']").val() == "N") {
+					if($('input[name="enterLevelsIV"]').val() == "") return; 
+				} else { 
+					$("select[name='selectIVwithin'] option:eq(1)").prop("selected", true);
+				}
+				
+				var iconIVstr = "";
+				var levelsIVstr = ""; 
+				var levels = [ ];
+				var IV = {
+					"id": 0,
+					"name": "",
+					"type": "",
+					"levels": [],
+					"within": "" };
+					
+				iconIVstr += getDataTypeIcon($("select[name='selectIVType']").val()); 
+								
+				if($("select[name='selectIVType']").val() == "N") {
+					$("#withinIV").show();
+					$("#levelsIV").show();  
+					levels = $('input[name="enterLevelsIV"]').val().split(',');
+					
+					if(levels){
+						levelsIVstr = '<ul class="list-group list-group-horizontal">';
+						$.each(levels, function(i){
+							levelsIVstr += '<small><li class="list-group-item">' + levels[i] + '</li></small>'; 
+							levels[i] = $.trim(levels[i]).replaceAll(" ","");
+						});
+						levelsIVstr += '</ul>';
+						IV.levels = levels; 
+					} 					
+				} else {
+					$("#levelsIV").hide();
+					$("#withinIV").hide();
+				}
+				
+				$("#listIV").append('<button type="button" id="buttonIV_' + IVs + '" class="btn btn-light me-1 mt-1"  style="vertical-align: top;">' + iconIVstr + $("input[name='nameIV']").val() + ' (' + $("select[name='selectIVwithin']").val() + ') <i class="bi ms-1 bi-x"" c></i>' + levelsIVstr + '</button>');
+				
+				$("#buttonIV_" + IVs).click(function(){  						
+					var removeItem;
+					var myNumber = this.id.split('_')[1];
+					$.each(studyDesign.IVs, function(i){
+						if(studyDesign.IVs[i].id == myNumber) removeItem = i; 
+					});
+					studyDesign.IVs.splice(removeItem, 1); 
+					$(this).remove();   
+					clearOutputAndWait();
+					displayDVrow(); 
+					displaySTrow(); 
+					$("#addIV").removeClass('disabled'); 
+				});
+								
+				IV.id = IVs;
+				IV.name = $("input[name='nameIV']").val();
+				IV.type = $("select[name='selectIVType']").val();
+				IV.within = $("select[name='selectIVwithin']").val();
+				
+				studyDesign.IVs.push(IV); 
+				
+				$("input[name='nameIV']").val("");
+				$("select[name='selectIVType'] option:eq(0)").prop("selected", true);
+				$("select[name='selectIVwithin'] option:eq(0)").prop("selected", true);
+				$('input[name="enterLevelsIV"]').val("")
+					
+				$("#levelsIV").hide();
+				$("#withinIV").hide();	
+
+				clearOutputAndWait();
+				displayDVrow();		
+				displaySTrow();	
+ 
+				if(studyDesign.IVs.length > 2)  $("#addIV").addClass('disabled'); 
+				else $("#addIV").removeClass('disabled');					
+			});
+			
+			function displayDVrow(){  	
+				if(studyDesign.IVs.length > 0){
+					$("input[name='nameIV']").prop("required", false); 
+					$("select[name='selectIVType']").prop("required", false); 
+					$("select[name='selectIVwithin']").prop("required", false); 
+					$("input[name='enterLevelsIV']").prop("required", false); 
+					$("input[name='nameDV']").prop("required", true); 
+					$("select[name='selectDVType']").prop("required", true); 
+					$("#rowDV").show(); 
+				} else {
+					$("input[name='nameIV']").prop("required", true); 
+					$("select[name='selectIVType']").prop("required", true); 
+					$("select[name='selectIVwithin']").prop("required", true); 
+					$("input[name='enterLevelsIV']").prop("required", true); 
+					$("input[name='nameDV']").prop("required", false); 
+					$("select[name='selectDVType']").prop("required", false); 
+					$("#rowES").hide();
+					$("#rowDV").hide();
+					$("#cellSAMPLES").hide();
+					$("#cellVARIANCE").hide();
+					$("#cellEFFECTSIZE").hide();
+					$("#cellMANOVA").hide();
+				}	 	 
+				
+				if(studyDesign.DVs.length > 0 && studyDesign.IVs.length > 0){ 
+					$("#cellSAMPLES").show();
+					$("#cellVARIANCE").show();
+					$("#cellEFFECTSIZE").show();
+				} else {
+					$("#cellSAMPLES").hide();
+					$("#cellVARIANCE").hide();
+					$("#cellEFFECTSIZE").hide();
+					$("#cellMANOVA").hide();
+					$("#rowWAIT").hide();
+				}
+			}
+			
+			$("#addDV").click(function() {
+				$("input[name='nameDV']").prop("required", true); 
+				$("select[name='selectDVType']").prop("required", true); 
+				
+				if($("input[name='nameDV']").val() == "") return;
+				if($("select[name='selectDVType']").val() == "") return;
+			
+				var iconDVstr = "";
+				var DV = {
+					"id": 0,
+					"name": "",
+					"type": "" };
+				DVs++;
+				iconDVstr += getDataTypeIcon($("select[name='selectDVType']").val()); 
+				
+				$("#listDV").append('<button type="button" id="buttonDV_' + DVs + '" class="btn btn-light me-1 mt-1 ">' + iconDVstr + $("input[name='nameDV']").val() + '<i class="bi ms-1 bi-x "></i></button>');
+				
+				$("#buttonDV_" + DVs).click(function(){ 
+					var removeItem;
+					var myNumber = this.id.split('_')[1];
+					
+					$.each(studyDesign.DVs, function(i){
+						if(studyDesign.DVs[i].id == myNumber) removeItem = i; 
+					}); 
+					
+					studyDesign.DVs.splice(removeItem, 1); 
+					$(this).remove();  
+					clearOutputAndWait();
+					displayDVrow(); 
+					displaySTrow();
+					$("#addDV").removeClass('disabled');  
+				});
+				
+				DV.id = DVs;
+				DV.name = $("input[name='nameDV']").val();
+				DV.type = $("select[name='selectDVType']").val(); 
+				studyDesign.DVs.push(DV); 
+				
+				$("input[name='nameDV']").val("");
+				$("select[name='selectDVType'] option:eq(0)").prop("selected", true); 
+				displaySTrow();
+				
+				if(studyDesign.DVs.length > 3) {
+					$("#addDV").addClass('disabled'); 
+				} else {
+					$("#addDV").removeClass('disabled');
+				}	 
+				
+				$("#cellSAMPLES").show();
+				$("#cellVARIANCE").show();
+				$("#cellEFFECTSIZE").show();
+			}); 
+			 
+			function displaySTrow(){ 
+				if(studyDesign.DVs.length > 0){ 
+					$("input[name='nameDV']").prop("required", false); 
+					$("select[name='selectDVType']").prop("required", false); 						
+				} else { 
+					$("input[name='nameDV']").prop("required", true); 
+					$("select[name='selectDVType']").prop("required", true);  
+				}
+				 
+				if(studyDesign.DVs.length > 1 && studyDesign.IVs.length > 0 ){
+					$("#cellMANOVA").show();
+				} else {
+					$("#cellMANOVA").hide();
+					$("input[name='manovaCheckBox']").prop( 'checked', false );
+				}
+				
+				if(studyDesign.DVs.length > 0 && studyDesign.IVs.length > 0) startStudyPlanner();	 
+			}
+				
+			function startStudyPlanner() {  
+				var anIVHasMoreThanTwoLevels = false;
+				
+				$.each(studyDesign.IVs, function(i){  
+					if(studyDesign.IVs[i].levels.length > 2) anIVHasMoreThanTwoLevels = true; 
+				});
+				
+				if(studyDesign.IVs.length == 1 && studyDesign.DVs.length >= 1 && anIVHasMoreThanTwoLevels == false) $("#cellEQUIVALENCE").show();
+				else $("#cellEQUIVALENCE").hide(); 
+				
+				var studyHasParametricData = false;
+				$.each(studyDesign.DVs, function(i){  
+					if(studyDesign.DVs[i].type == "I" || studyDesign.DVs[i].type == "R")  studyHasParametricData = true; 
+				}); 
+				
+				studyDesign.MANOVA = $("input[name='manovaCheckBox']").prop('checked');
+				 
+				if(studyDesign.DVs.length > 0 && studyDesign.IVs.length > 0) {
+					var IVType = $("select[name='selectIVType']").val(); 
+				} 
+				
+				studyDesign.withinIVs = getItemsInArray(getItemsInArray(studyDesign.IVs, "type", "N"), "within", "within"); 
+				studyDesign.betweenIVs = getItemsInArray(getItemsInArray(studyDesign.IVs, "type", "N"), "within", "between"); 
+				
+				studyDesign.nonOrdinalIVs = [];
+				var ordinalIVs = getItemsInArray(getItemsInArray(studyDesign.IVs, "type", "O"), "within", "within"); 
+				var intervalIVs = getItemsInArray(getItemsInArray(studyDesign.IVs, "type", "I"), "within", "within"); 
+				var ratioIVs = getItemsInArray(getItemsInArray(studyDesign.IVs, "type", "R"), "within", "within"); 
+				studyDesign.nonOrdinalIVs = ordinalIVs.concat(intervalIVs).concat(ratioIVs);
+				console.log(studyDesign.nonOrdinalIVs);
+				
+				var allBetweens = [];  
+				$.each(studyDesign.betweenIVs, function(i){  
+					$.each(studyDesign.betweenIVs[i].levels, function(j){   
+						allBetweens.push(studyDesign.betweenIVs[i].levels);
+					});
+				});  
+				
+				var allWithins = []; 
+					$.each(studyDesign.withinIVs, function(i){ 
+						if(studyDesign.withinIVs[i].levels.length > 1)
+							allWithins.push(studyDesign.withinIVs[i].levels);
+				});
+				
+				studyDesign.betweenConditions = combineArrays(allBetweens.filter(onlyUniqueValuesInArray));
+				studyDesign.withinConditions = combineArrays(allWithins);
+				studyDesign.allConditions = studyDesign.betweenConditions.concat(studyDesign.withinConditions);  
+				studyDesign.allCombinations = combineArrays(allWithins.concat(allBetweens.filter(onlyUniqueValuesInArray)));
+				  
+				$.each(studyDesign.betweenConditions, function(i){ 
+					studyDesign.betweenConditions[i] = studyDesign.betweenConditions[i].slice(0, -1);
+				}); 
+				
+				$.each(studyDesign.withinConditions, function(i){ 
+					studyDesign.withinConditions[i] = studyDesign.withinConditions[i].slice(0, -1);
+				});
+				
+				$.each(studyDesign.allConditions, function(i){ 
+					studyDesign.allConditions[i] = studyDesign.allConditions[i].slice(0, -1);
+				});
+				
+				console.log(studyDesign); 
+				
+				var sampleSize = requestSampleSizeFromOpenCPU(parseFloat($("#meanDeltaInputId").val()), parseFloat( $("#varianceInputId").val())); //Math.floor(getSampleSize($("#varianceInputId").val(), $("#meanDeltaInputId").val(), studyDesign.allConditions.length, studyDesign.withinConditions.length), 0);				
+				//console.log("Sample Size: " + requestSampleSizeFromOpenCPU(parseFloat($("#meanDeltaInputId").val()), parseFloat( $("#varianceInputId").val())));
+								 
+				var minParticipants = 12;
+				var numParticipants = 0;
+				
+				if(studyDesign.withinConditions.length > 0 && studyDesign.withinConditions.length <= 3) minParticipants = permutations(studyDesign.withinConditions).length * 2;
+				if(studyDesign.withinConditions.length > 3 && studyDesign.withinConditions.length <= 12) minParticipants = studyDesign.withinConditions.length; 
+				if(studyDesign.withinConditions.length > 3 && studyDesign.withinConditions.length <= 12) minParticipants = studyDesign.withinConditions.length;
+				
+				minParticipants = minParticipants * (studyDesign.betweenConditions.length > 0 ? studyDesign.betweenConditions.length : 1) * 2; 
+				
+				if(manualSubjectUpdate) numParticipants = $("#samplesInputId").val();
+				else numParticipants = roundUp(sampleSize, minParticipants);
+				
+				if(numParticipants < studyDesign.allConditions.length) numParticipants = studyDesign.allConditions.length; 
+				
+				var steps = studyDesign.allConditions.length;
+				studyDesign.samples = setSlider('#samplesInputId','#samplesOutputId', numParticipants, 0, 1000, steps);  
+	 
+				$("#samplesOutputId").text($("#samplesInputId").val()); 
+				$("#power").html(""); 
+				
+				if(studyDesign.allConditions.length > 0){
+					requestPowerFromOpenCPU(
+						parseFloat($("#meanDeltaInputId").val()),
+						parseFloat($("#varianceInputId").val()),
+						studyDesign.allConditions.length,
+						numParticipants,
+						(studyDesign.betweenConditions.length > 0 ? studyDesign.betweenConditions.length : 1),
+						(studyDesign.withinConditions.length > 0 ? studyDesign.withinConditions.length : 1)
+					);
+				}
+				
+				if(studyDesign.nonOrdinalIVs.length > 0){ 
+					requestRegressionPowerFromOpenCPU(
+						studyDesign.IVs.length, 
+						parseFloat($("#meanDeltaInputId").val()),
+						parseFloat($("#varianceInputId").val()), 
+						numParticipants
+					);
+				}
+				
+				console.log("numParticipants: " + numParticipants +  " Sample Size: " + sampleSize + " samples: " +studyDesign.samples + " all levels: b" + (studyDesign.betweenConditions.length) + " w" + (studyDesign.withinConditions.length) + " " + (studyDesign.withinConditions.length + studyDesign.betweenConditions.length) +" all " + studyDesign.allConditions.length+" minParticipants " + minParticipants+" power " + power + " delta: " + $("#meanDeltaInputId").val() +  " variance: " + $("#varianceInputId").val());
+			}
+			  
+			if(debug) $("#btnExample2x3Within").click();
+		});  
+			 
+		function requestRegressionPowerFromOpenCPU(IVs, delta, sd, participants) {    
+			var fsquared = Math.pow(getEffectSizef(delta, sd), 2); 
+			 
+			if(!serverRegressionRequestRunning) {
+				serverRegressionRequestRunning = true;  
+				var req = ocpu.call("powerRegression",{ ivs : parseInt(IVs), participants : parseInt(participants), fsquared : fsquared, alpha : 0.05},
+				function(session){
+					session.getConsole(function(outtxt){   
+						$("#rowWAIT").hide();
+						console.log(outtxt);
+						showRegressionPowerAndEffectSizes(outtxt);  
+						showExperimentalDesign();
+						showStatisticalTest();     
+						serverRegressionRequestRunning = false;
+					});
+					//if R returns an error, alert the error message
+					req.fail(function(){
+						console.log("Server error: " + req.responseText);
+					});   
+				}); 
+			} 
+		}  
+		
+		function requestSampleSizeFromOpenCPU(delta, SDs) {
+			var sampleSize = 24;
+			 /*
+			if(!serverSAMPLERequestRunning) {
+				serverSAMPLERequestRunning = true;  
+				var effectSize = getEffectSizef(delta, SDs, 0.5); 
+				var groups = studyDesign.allCombinations.length > 18 ? 18 : studyDesign.allCombinations.length;
+				if(groups == 0) groups = 2;
+				
+				console.log("groups: "  + groups);
+				var req = ocpu.rpc("sampleSize",{ grps : parseInt(groups), SD : parseFloat(SDs), pwr : 0.8, alpha : 0.05 }, function(outtxt){
+					console.log("Sample form Server: "  + outtxt)
+					sampleSize = parseFloat(outtxt);
+					serverSAMPLERequestRunning = false;    
+				});
+				//if R returns an error, alert the error message
+				req.fail(function(){
+					console.log("Server error: " + req.responseText); 
+				});  
+			} */
+			return sampleSize;
+		}
+		
+		function clearOutputAndWait() {
+			if(studyDesign.IVs.length > 0 && studyDesign.DVs.length > 0) {
+				$("#rowWAIT").show(); 
+				$("#rowES").hide();
+				$("#rowST").hide(); 
+				$("#rowED").hide(); 
+			} else {
+				$("#rowWAIT").hide(); 
+				$("#rowES").hide();
+				$("#rowST").hide(); 
+				$("#rowED").hide(); 
+				$("#cellMANOVA").hide();
+				$("#cellEQUIVALENCE").hide();
+				$("#cellSAMPLES").hide();
+				$("#cellVARIANCE").hide();
+				$("#cellEFFECTSIZE").hide();
+			}
+		}
+		
+			 
+		function requestPowerFromOpenCPU(delta, sd, conditions, participants, betweens, withins) {   
+			var means = []; // if delta = 0.5: 0, 0, 0.5, 0.5, 0.0, 0.0
+			var labelArr = []; //["time", "morning", "afternoon" , "prototype", "prototypeA", "prototypeB", "prototypeC"];  
+			var studyDesignStr = ""; 
+			
+			$.each(studyDesign.betweenIVs, function(i){ 
+				labelArr.push(studyDesign.betweenIVs[i].name);
+				studyDesignStr += studyDesign.betweenIVs[i].levels.length + "b*"
+				$.each(studyDesign.betweenIVs[i].levels, function(j){ 
+					labelArr.push(studyDesign.betweenIVs[i].levels[j]);   
+				});
+			}); 
+			
+			if(studyDesign.withinIVs.length == 0) studyDesignStr = studyDesignStr.slice(0, -1);
+			
+			$.each(studyDesign.withinIVs, function(i){ 
+				labelArr.push(studyDesign.withinIVs[i].name); 
+				studyDesignStr += studyDesign.withinIVs[i].levels.length + "w*"
+				$.each(studyDesign.withinIVs[i].levels, function(j){ 
+					labelArr.push(studyDesign.withinIVs[i].levels[j]);   
+				});
+			}); 
+			
+			if(studyDesign.withinIVs.length > 0) studyDesignStr = studyDesignStr.slice(0, -1); 
+			
+			$.each(studyDesign.allCombinations, function(i){  
+				Math.seedrandom(i);
+				var j = Math.random() * delta;
+				if(i == 0) j = 0;
+				if(i == studyDesign.allCombinations.length - 1) j = delta;
+				means.push(j);
+			});  
+			
+			if(studyDesign.allConditions.length > participants) {
+				$("#samplesOutputId").text("Need more samples...");
+				return;  
+			} else {
+				if(!serverANOVARequestRunning) {
+					serverANOVARequestRunning = true;   
+					var req = ocpu.call("powerANOVA",{ studyDesign : studyDesignStr, N : parseInt(participants), means : means, SD : parseFloat(sd), labels : labelArr, wcorr : 0.5, alpha : 0.05 }, function(session){
+						session.getConsole(function(outtxt){   
+							console.log(outtxt)
+							$("#rowWAIT").hide();
+							showANOVAPowerAndEffectSizes();  
+							showExperimentalDesign();
+							showStatisticalTest();   
+							$('#powerOutputTable').bootstrapTable({ data: JSON.parse( outtxt.split('\n')[2]) }); 
+							$('#powerOutputTable').html($('#powerOutputTable').html().replaceAll(":", " &times; ")); 
+							serverANOVARequestRunning = false;
+						});
+						//if R returns an error, alert the error message
+						req.fail(function(){
+							console.log("Server error: " + req.responseText);
+						});   
+					});
+				}
+			}
+		}  
+		
+		function showRegressionPowerAndEffectSizes(outtxt){
+			var text = outtxt.split("Multiple regression power calculation")[1];
+			var text = text.split("\n");
+			var tableBody = "";
+			$(text).each(function(i){
+				if(i > 1) var item = text[i].replaceAll(" ","").split("="); 
+				if(item){
+					if (item[0] == "u") item[0] = "Number of regression coefficients (predictors)";
+					if (item[0] == "v") item[0] = "Degrees of freedom (<i>df</i>)";
+					if (item[0] == "f2"){
+						item[0] = "Effect size (<i>f²</i>)";
+						item[1] = parseFloat(item[1]).toFixed(3);
+					}
+					if (item[0] == "sig.level") item[0] = "Significance level";
+					if (item[0] == "power") { 
+						item[0] = "Statistical power";
+						item[1] = (parseFloat(item[1]) * 100).toFixed(3) + "%"
+					}
+					if (item[0] != '') tableBody += "<tr><td>" + item[0] + "</td><td>" + item[1] + "</td></tr>"; 
+				}
+			});
+			$("#rowES").show(); 
+			  
+			var resultStr = '<div class="accordion">'; 
+
+			var text = "The statistical power (the probability that the test correctly rejects the null hypothesis) of a regression depends on the sample size (the number of participants per condition), effect size, and degrees of freedom. The null hypothesis is that none of the independent variables (in a regression called <i>coefficients</i> or <i>predictors</i> explain any of the variability."
+ 
+			resultStr += '<div class="accordion-item" id="accordionREGRESSIONES"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseREGRESSIONES" aria-controls="accordionREGRESSIONES"><h6 class="accordion-header">' + getDataTypeIcon("H") + ' Simulated Regression Power and Effect Sizes</h6></button><div id="collapseREGRESSIONES" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne"><div class="accordion-body bg-light" )><p>' + text + '</p><p><table id="powerRegressionOutputTable" class="table-striped table table-bordered table-hover"><thead><tr><th data-field="_row" class="th-sm"><strong >Regression parameter</strong></th><th data-field="value" class="th-sm"><strong >Value</strong></th></tr></thead><tbody>' + tableBody + '</tbody></table></p></div></div></div>'; 		 
+			
+			resultStr+='</div>';
+			$("#power").append(resultStr); 
+			$("#resultsPanel").show();
+		}
+		  
+		function showANOVAPowerAndEffectSizes(){
+			$("#rowES").show();
+			  
+			var resultStr = '<div class="accordion">';
+			  
+			var effectSizesText = "Initial effect sizes: Cohen's <i>d</i>: " + getEffectSized(parseFloat($("#meanDeltaInputId").val()), parseFloat($("#varianceInputId").val())).toFixed(3) + " Cohen's <i>f</i>: " + getEffectSizef(parseFloat($("#meanDeltaInputId").val()),parseFloat($("#varianceInputId").val(), 0.5)).toFixed(3);
+			
+			var text = "The statistical power (the probability that the test correctly rejects the null hypothesis) depends on the sample size (the number of participants per condition). Based on Lehr's Rule of 16, this tool also estimates the required sample size to complete your factorial design. Therefore, your statistical power can vary. The simulated power of your IVs is listed below. Typically, between-subject IVs have a lower statistical power than within-subject variables."
+ 
+			resultStr += '<div class="accordion-item" id="accordionANOVAES"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseANOVAES" aria-controls="accordionANOVAES"><h6 class="accordion-header">' + getDataTypeIcon("H") + ' Simulated Statistical Power, Main and Interaction Effect Sizes</h6></button><div id="collapseANOVAES" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne"><div class="accordion-body bg-light" )><p>' + text + '</p><table id="powerOutputTable" class="table-striped"><thead><tr><th data-field="_row" class="th-sm"><strong >Independent Variable(s)</strong></th><th data-field="power" class="th-sm"><strong >Statistical Power in %</strong></th><th data-field="partial_eta_squared" class="th-sm"><strong >Effect Size (<i>&eta;<sub>p</sub><sup>2</sup></i>)</strong></th><th data-field="cohen_f" class="th-sm"><strong>Effect Size (Cohen\'s <i>f</i>)</strong></th></tr></thead></table><br /><p>' + effectSizesText + '</p></div></div></div>';
+			resultStr += '</div>';
+			
+			$("#power").append(resultStr); 
+			$("#resultsPanel").show();
+		}
+		
+		function showExperimentalDesign(){ 
+			$("#rowED").show();
+			  
+			var resultStr = '<div class="accordion">';
+
+			if(studyDesign.betweenIVs.length > 0) {  
+				resultStr += '<div class="accordion-item" id="accordionBetween"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBetween" aria-controls="accordionBetween"><h6 class="accordion-header">' + getDataTypeIcon("M") + ' Assignment of conditions for your between-subject IVs (subjects are <i>split</i> into groups of your conditions)</h6></button><div id="collapseBetween" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne"><div class="accordion-body bg-light">Draw a random sample from a group or assign your subjects randomly and equally to each of the following ones: ' + arrayToDesignSequence(studyDesign.betweenConditions, "between", studyDesign.samples) + 'Please note that variance of measures from between-subject designs can be quite high. Please consider multiple task repetitions, equal balancing of groups, and as many samples as possible for these conditions (examples see above). In between-subject designs, the subjects are generally blind to the other conditions.</div></div></div>'; 
+			}
+			
+			if(studyDesign.withinIVs.length > 0) {   
+				resultStr += '<div class="accordion-item" id="accordionWithin"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWithin" aria-controls="accordionWithin"><h6 class="accordion-header">' + getDataTypeIcon("M") + ' Sequence of conditions for your within-subject IVs (conditions to which <i>all</i> subjects are exposed to)</h6></button><div id="collapseWithin" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionWithin"><div class="accordion-body bg-light">';
+				if(studyDesign.withinConditions.length <= 3) { 
+					resultStr += "To avoid sequence effects order the " + studyDesign.withinConditions.length + " conditions of your within-subject IVs into <i>permutations</i>. Repeat the permutations with a multiple of " + permutations(studyDesign.withinConditions).length + ". For example with " + (permutations(studyDesign.withinConditions).length * 2) + ", " +  (permutations(studyDesign.withinConditions).length * 3) + ", " +  (permutations(studyDesign.withinConditions).length * 4) + "... subjects." + arrayToDesignSequence(studyDesign.withinConditions, "permutations") + ""; 
+				}
+				if(studyDesign.withinConditions.length > 3 && studyDesign.withinConditions.length <= 12) { 
+					resultStr += "To avoid sequence effects order the " + studyDesign.withinConditions.length + " conditions of your within-subject IVs using a <i>" + studyDesign.withinConditions.length + " &times; " + studyDesign.withinConditions.length + " balanced Latin Square</i>. Repeat the Latin Square with a multiple of " + (studyDesign.withinConditions.length) + ". For example with " + (studyDesign.withinConditions.length * 2) + ", " +  (studyDesign.withinConditions.length * 3) + ", " +  (studyDesign.withinConditions.length * 4) + "... subjects." + arrayToDesignSequence(studyDesign.withinConditions, "latinSquare") + "";
+				}
+				if(studyDesign.withinConditions.length > 12) { 
+					resultStr += "To avoid sequence effects put the " + studyDesign.withinConditions.length + " following conditions into a <i>pseudo-randomized order</i>. For example: " + arrayToDesignSequence(studyDesign.withinConditions, "shuffle", studyDesign.samples) ; 
+				}  
+				resultStr += "</div></div></div>";
+			} 
+			
+			if(studyDesign.nonOrdinalIVs.length > 0) {   
+				resultStr += '<div class="accordion-item" id="accordionWithinRegression"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWithinRegression" aria-controls="accordionWithinRegression"><h6 class="accordion-header">' + getDataTypeIcon("M") + ' Experimental Designs with Functional Outcome</h6></button><div id="collapseWithinRegression" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionWithinRegression"><div class="accordion-body bg-light">';
+				resultStr += "Run your study will a random sample and take your measures. Any predictor (measure, parameter, etc.) can be your within-subject variable and coefficient of your (linear) model, any outcome can be your dependent variable. Using this design your dependent variable <i>f(x)</i> will become a function of your predictor <i>x</i>. Such designs often have the problem of separating cause and effect from each other, as many factors can be the subtrate of the same correlation. For this reason, predictors are also used as covariates, since they cannot be controlled but can be measured." 
+				resultStr += "</div></div></div>";
+			}
+			
+			resultStr+='</div>';
+			$("#design").html(resultStr);
+		}
+		
+		function showStatisticalTest(){
+			$("#rowST").show(); 
+			
+			var resultStr = ""; 
+			var withinIVs = getItemsInArray(studyDesign.IVs, "within", "within");
+			var betweenIVs = getItemsInArray(studyDesign.IVs, "within", "between");
+			var nominalIVs = getItemsInArray(studyDesign.IVs, "type", "N");   
+			
+			if(studyDesign.MANOVA) resultStr += '<div class="accordion-item" id="accordionMANOVA"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMANOVA"  aria-controls="accordionMANOVA"><h6 class="accordion-header">' + getDataTypeIcon("M") + ' Inferential statistics requires a ' + number2words(studyDesign.IVs.length) + '-factorial ' + ((withinIVs.length >= 1 && betweenIVs.length >= 1) ? 'mixed-design ' : ' ') + 'MANOVA</h6></button><div id="collapseMANOVA" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne"><div class="accordion-body bg-light"><strong>Statistical test:</strong></br><code>model <- manova(cbind(' + getNamesFromArray(studyDesign.DVs, ", ", "name").slice(0, -2) + ') ~ ' + getNamesFromArray(studyDesign.IVs, " * ", "name").slice(0, -2) + ', data = data)<br />summary(model)<br />summary.aov(model)</code></br>for DVs that are significant (p &#8804; .05) you can perform univariate tests (see below)</div></div></div>';
+			
+			if(studyDesign.DVs.length > 0 && studyDesign.IVs.length > 0) {
+				$.each(studyDesign.DVs, function(i) { 
+					var testStr = "";   
+					
+					function generateAccordionHeader(i, name, statisticalTest, type) {
+						return '<div class="accordion-item" id="accordion' + i +'"><button class="accordion-button collapsed " type="button" data-bs-toggle="collapse" data-bs-target="#collapse' + i +'" aria-controls="accordion' + i +'"><h6 class="accordion-header">' + getDataTypeIcon(type) + ' ' + studyDesign.DVs[i].name + ': ' + statisticalTest + '</h6></button><div id="collapse' + i +'" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne"><div class="accordion-body bg-light">';
+					}
+					
+					function generateNormality(text, code, show) {
+						if(show) return '<strong><div class="mt-3">Normality test:</div></strong><div>' + text + '<br /><code>' + code + '</code></div>';
+						else return "";
+					}
+					
+					function generateCode(title, text, code) {
+						return '<strong><div class="mt-3">' + title + '</strong><br /></div><div>' + text + '<br /><code light-bg>' + code + '</code></div>';
+					} 
+					
+					function generateAccordionFooter() {
+						return '</div></div></div></div>';
+					}
+					
+					function tabPills(id, question, title1, title2, tab1, tab2) {
+						return '<div class="mt-3">' + question + '</div><ul class="nav nav-pills mb-3 mt-3" white" id="pills-tab-' + id + '" role="tablist"><li class="nav-item" role="presentation"><button class="nav-link active btn-light me-1" id="pills-' + title1 + '-tab-' + id + '" data-bs-toggle="pill" data-bs-target="#pills-' + title1 + '-' + id + '" type="button" role="tab" aria-controls="pills-' + title1 + '-' + id + '" aria-selected="true">' + title1 + '</button>   </li> <li class="nav-item" role="presentation"><button class="nav-link" id="pills-' + title2 + '-tab-' + id + '" data-bs-toggle="pill" data-bs-target="#pills-' + title2 + '-' + id + '" type="button" role="tab" aria-controls="pills-' + title2 + '-' + id + '" aria-selected="false">' + title2 + '</button>   </li></ul> <div class="tab-content" id="pills-tabContent"><div class="tab-pane fade show active" id="pills-' + title1 + '-' + id + '" role="tabpanel" aria-labelledby="pills-' + title1 + '-tab-' + id + '">' + tab1 + '</div>   <div class="tab-pane fade" id="pills-' + title2 + '-' + id + '" role="tabpanel" aria-labelledby="pills-' + title2 + '-tab-' + id + '">' + tab2 + '</div> </div>';
+					}
+					
+					if(withinIVs.length >= 1 && betweenIVs.length >= 1) {  
+						var parametricTestStr = generateCode('Your statistical test for parametric data', 'The test provided by the <code>rstatix</code>-package automatically applies Greenhouse-Geisser correction to your within-subjects IVs violating the sphericity assumption (when Mauchly\'s test p-value is significant, p &#8804; 0.05).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID,  between = c(' + getNamesFromArray(betweenIVs, ", ", "name").slice(0, -2) + '), within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + ')</br>get_anova_table(aov, correction = "auto")');
+						parametricTestStr += generateCode('The post hoc test for parametric data', 'Post hoc tests of interaction effects can computed with the <code>testInteraction()</code> procedure of the <code>phia</code> package in R. Such results are difficult to interpret. With main effects only you can perform pairwise comparisons using t-tests, e.g.:','library(rstatix)<br />t_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + withinIVs[0].name + ')');
+						parametricTestStr += generateCode('Evaluate your effect size','To determine your main and interaction effect size <i>partial eta-squared</i> of a multi-factorial ANOVA you can use the following interpretation: 0.01 - 0.01 (small effect), 0.01 - 0.06 (moderate effect) and 0.06 - 0.14 (large effect).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID,  between = c(' + getNamesFromArray(betweenIVs, ", ", "name").slice(0, -2) + '), within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + ')</br>get_anova_table(aov, correction = "auto")');
+						
+						var nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'The test by the <code>ARTool</code>-package performs a non-parametric ' + number2words(studyDesign.IVs.length) + '-factorial mixed-design ART-ANOVA.','library(ARTool)<br />art <- art(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + getNamesFromArray(studyDesign.IVs, " * ", "name").slice(0, -2) + ' + (1|SubjectID) )</br>anova(art)');	
+						nonparametricTestStr += generateCode('The post hoc test for non-parametric data', 'Post hoc tests of interaction effects can computed with the <code>testInteraction()</code> procedure of the <code>phia</code> package in R. Such results are difficult to interpret. With main effects only you can perform pairwise comparisons using Wilcoxon signed-rank tests, e.g.:','library(rstatix)<br />wilcox_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + withinIVs[0].name + ', paired=TRUE)');	
+						nonparametricTestStr += generateCode('Evaluate your effect size','Save your non-parametric ART-ANOVA model above. Add a new column with (SS/SS+SStotal) deriving your main and interaction effect size <i>partial eta-squared</i> and use the following interpretation: 0.01 - 0.01 (small effect), 0.01 - 0.06 (moderate effect) and 0.06 - 0.14 (large effect).','anova.art <- anova(art)<br />anova.art$eta.sq.part = anova.art$`Sum Sq`/(anova.art$`Sum Sq` + anova.art$`Sum Sq.res`)<br />anova.art');
+						
+						if(studyDesign.DVs[i].type == "R" || studyDesign.DVs[i].type == "I") {
+							// mixed design ANOVA 
+							resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "a " + number2words(studyDesign.IVs.length) + "-factorial mixed-design ANOVA", studyDesign.DVs[i].type);
+							resultStr += generateNormality('Your settings suggest that you can potentially apply parametric tests. Before doing so you must check your conditions for normal distribution using the test by Shapiro-Wilk.','library(rstatix)<br />library(tidyverse)<br />data %>% group_by(' + getNamesFromArray(nominalIVs, ", ", "name").slice(0, -2) + ') %>% shapiro_test(' + studyDesign.DVs[i].name + ')', true); 
+							resultStr += (($("#samplesInputId").val() > 50) ? '<div class="mt-3">Your sample size is greater than 50. If any of the Shapiro-Wilk\'s tests is significant, your can also test your data using a normal QQ plot which draws a correlation between the given data and its normal distribution. If all points for each cell fall approximately along the reference line, you can assume normality of the data without Shapiro-Wilk\'s test. The plot can created using the <code>ggpubr</code> package.<br /> <code>library(ggpubr)<br />ggqqplot(data, "' + studyDesign.DVs[i].name + '", ggtheme = theme_bw()) + facet_grid(' + getNamesFromArray(withinIVs, " ~ ", "name").slice(0, -3).replace(/[\~\%]/g, function(match, offset, all) { return match === "~" ? (all.indexOf("~") === offset ? '~' : '+') : ''; })  + ')</code></div>' : '')							
+							resultStr += tabPills(i, "Do the tests indicate that your data is normal distributed (all p&#8805; 0.05 for all conditions)?", "yes","no", parametricTestStr, nonparametricTestStr);	 	 					
+						} else { // mixed-design ART ANOVA 
+							resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "a " + number2words(studyDesign.IVs.length) + "-factorial mixed-design aligned-rank transform (ART) ANOVA", studyDesign.DVs[i].type);
+							resultStr += nonparametricTestStr;
+						} 
+					}
+					console.log("withinIVs.length : " + withinIVs.length + " nominalIVs.length: " + nominalIVs.length + " studyDesign.DVs[" + i + "].type" + studyDesign.DVs[i].type)
+					
+					if(withinIVs.length >= 1 && betweenIVs.length == 0 ) { 
+						if((withinIVs.length > 1 || withinIVs[0].levels.length > 2) && studyDesign.nonOrdinalIVs.length == 0) {
+							var parametricTestStr = "";
+							var nonparametricTestStr = "";
+							
+							parametricTestStr += generateCode('Your statistical test for parametric data', 'The test provided by the <code>rstatix</code>-package automatically applies Greenhouse-Geisser correction to your within-subjects IVs violating the sphericity assumption (when Mauchly\'s test p-value is significant, p &#8804; 0.05).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID, within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + ')</br>get_anova_table(aov, correction = "auto")');
+							parametricTestStr += generateCode('Your post hoc test for parametric data', 'Post hoc tests of interaction effects can computed with the <code>testInteraction()</code> procedure of the <code>phia</code> package in R. Such results are difficult to interpret. With main effects only you can perform pairwise comparisons using t-tests, e.g.:','library(rstatix)<br />t_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + withinIVs[0].name + ')');
+							parametricTestStr += generateCode('Evaluate your effect size','To determine your main and interaction effect size <i>partial eta-squared</i> of a multi-factorial ANOVA you can use the following interpretation: 0.01 - 0.01 (small effect), 0.01 - 0.06 (moderate effect) and 0.06 - 0.14 (large effect).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID, within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + '), effect.size = "pes")</br>get_anova_table(aov, correction = "auto")');
+							
+							if(withinIVs.length > 1){
+								nonparametricTestStr += generateCode('Your statistical test for non-parametric data', 'The test by the <code>ARTool</code>-package performs a non-parametric ' + number2words(studyDesign.IVs.length) + '-factorial mixed-design ART-ANOVA.','library(ARTool)<br />art <- art(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + getNamesFromArray(studyDesign.IVs, " * ", "name").slice(0, -2) + ' + (1|SubjectID) )</br>anova(art)');	
+								nonparametricTestStr += generateCode('The post hoc test for non-parametric data', 'Post hoc tests of interaction effects can computed with the <code>testInteraction()</code> procedure of the <code>phia</code> package in R. Such results are difficult to interpret. With main effects only you can perform pairwise comparisons using Wilcoxon signed-rank tests, e.g.:','wilcox_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + withinIVs[0].name + ')');	
+								nonparametricTestStr += generateCode('Evaluate your effect size','Save your non-parametric ART-ANOVA model above. Add a new column with (SS/SS+SStotal) deriving your main and interaction effect size <i>partial eta-squared</i> and use the following interpretation: 0.01 - 0.01 (small effect), 0.01 - 0.06 (moderate effect) and 0.06 - 0.14 (large effect).','anova.art <- anova(art)<br />anova.art$eta.sq.part = anova.art$`Sum Sq`/(anova.art$`Sum Sq` + anova.art$`Sum Sq.res`)<br />anova.art');
+							} else {
+								nonparametricTestStr += generateCode('Your statistical test for non-parametric data', 'The test performs a non-parametric Friedman rank sum test.','library(rstatix)<br />friedman_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + withinIVs[0].name + ' | SubjectID)'); 
+								nonparametricTestStr += generateCode('Your post hoc test for parametric data', 'With significant main effect(s), you can perform pairwise comparisons using Wilcoxon signed-rank tests, e.g.:','library(rstatix)<br />wilcox_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + withinIVs[0].name + ', paired=TRUE)');  
+								nonparametricTestStr += generateCode('Evaluate your effect size','To determine your main effect size <i>Kendall W</i> of a one-factorial non-parametric RM-ANOVA you can use the Cohen\'s interpretation guidelines of 0.1 - 0.3 (small effect), 0.3 - 0.5 (moderate effect) and >= 0.5 (large effect).','library(rstatix)<br />friedman_effsize(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + withinIVs[0].name + ' | SubjectID)');  
+							}
+							
+							// RM ANOVAs
+							if(studyDesign.DVs[i].type == "R" || studyDesign.DVs[i].type == "I") {
+								// n-factorial ANOVA
+								resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "a " + number2words(studyDesign.IVs.length) + "-factorial repeated-measures (RM) ANOVA", studyDesign.DVs[i].type);
+								resultStr += generateNormality('Your settings suggest that you can potentially apply parametric tests. Before doing so you must check your conditions for normal distribution using the test by Shapiro-Wilk.','library(rstatix)<br />library(tidyverse)<br />data %>% group_by(' + getNamesFromArray(nominalIVs, ", ", "name").slice(0, -2) + ') %>% shapiro_test(' + studyDesign.DVs[i].name + ')', true); 
+								resultStr += (($("#samplesInputId").val() > 50) ? '<div class="mt-3">Your sample size is greater than 50. If any of the Shapiro-Wilk\'s tests is significant, your can also test your data using a normal QQ plot which draws a correlation between the given data and its normal distribution. If all points for each cell fall approximately along the reference line, you can assume normality of the data without Shapiro-Wilk\'s test. The plot can created using the <code>ggpubr</code> package.<br /> <code>library(ggpubr)<br />ggqqplot(data, "' + studyDesign.DVs[i].name + '", ggtheme = theme_bw()) + facet_grid(' + getNamesFromArray(withinIVs, " ~ ", "name").slice(0, -3).replace(/[\~\%]/g, function(match, offset, all) { return match === "~" ? (all.indexOf("~") === offset ? '~' : '+') : ''; })  + ')</code></div>' : '')							
+								resultStr += tabPills(i, "Do the tests indicate that your data is normal distributed (all p&#8805; 0.05 for all conditions)?", "yes","no", parametricTestStr, nonparametricTestStr); 
+							} else {
+								if(studyDesign.IVs.length == 1){ // FRIEDMAN ANOVA
+									resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "a Friedman rank sum test (or non-parametric one-way repeated measures ANOVA)", studyDesign.DVs[i].type);
+									resultStr += nonparametricTestStr;
+								} else { 						 // ART ANOVA
+									resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "a " + number2words(studyDesign.IVs.length) + "-factorial aligned-rank transform (ART) repeated-measure (RM) ANOVA", studyDesign.DVs[i].type);
+									resultStr += nonparametricTestStr;  
+								}
+							}
+						} else { 
+							var parametricTestStr = "";
+							var nonparametricTestStr = "";
+							
+							if(withinIVs[0].levels.length == 2){  
+								parametricTestStr += generateCode('Your statistical test for parametric data', 'Classic t-test between paired samples.','library(rstatix)<br />t_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = TRUE)');
+								parametricTestStr += generateCode('Evaluate your effect size', 'Effect sizes for paired (dependent) t-tests <i>d</i> poposed by Cohen, are: 0.1 - 0.2 (small effect), 0.2 - 0.5 (moderate effect) and 0.5 - 0.8 (large effect) (Cohen 1998, Navarro (2015)). This means that if two groups\' means don\'t differ by 0.2 standard deviations or more, the difference is trivial, even if it is statistically significant.','library(rstatix)<br />cohens_d(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = TRUE)');
+								
+								var nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'A non-parametric test between two paired (dependent) samples.','library(rstatix)<br />wilcox_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = TRUE)');  
+								nonparametricTestStr += generateCode('Evaluate your effect size','The interpretation of the effect size of a non-parametric test between two paired (dependent) samples <i>r</i> is commonly: 0.1 - 0.3 (small effect), 0.3 - 0.5 (moderate effect) and > 0.5 (large effect).','library(rstatix)<br />wilcox_effsize(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = TRUE)');
+								
+								if(studyDesign.DVs[i].type == "R" || studyDesign.DVs[i].type == "I") {  // paired t-test  
+									resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "an paired (dependent) t-test", studyDesign.DVs[i].type);
+									resultStr += generateNormality('Your settings suggest that you can potentially apply parametric tests. Before doing so you must check your conditions for normal distribution using the test by Shapiro-Wilk.','library(rstatix)<br />library(tidyverse)<br />data %>% group_by(' + getNamesFromArray(nominalIVs, ", ", "name").slice(0, -2) + ') %>% shapiro_test(' + studyDesign.DVs[i].name + ')', true);  
+									resultStr += tabPills(i, "Do the tests indicate that your data is normal distributed (all p&#8805; 0.05)?", "yes","no", parametricTestStr, nonparametricTestStr);  
+								} else { 																// paired Wilcoxon-test  
+									resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "a paired Wilcoxon signed-rank test", studyDesign.DVs[i].type);
+									resultStr += nonparametricTestStr
+								}
+							} else {
+								var singleOrMultiples = studyDesign.nonOrdinalIVs.length > 1 ? "multivariate" : "single";
+								var parametricTestStr = generateCode('Your statistical test for parametric data', 'A ' + singleOrMultiples + ' linear regression','lm <- lm(' + studyDesign.DVs[i].name + ' ~ ' + getNamesFromArray(withinIVs, " + ", "name").slice(0, -2) + ', data = data)</br>summary(lm)'); 
+								
+								var nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'A ' + singleOrMultiples + ' Kendall-Theil nonparametric regression using the <code>mblm</code> package','mblm <- mblm(' + studyDesign.DVs[i].name + ' ~ ' + getNamesFromArray(withinIVs, " + ", "name").slice(0, -2) + ', data = data)</br>summary(mblm)');  
+								  
+								if(studyDesign.DVs[i].type == "R" || studyDesign.DVs[i].type == "I") { 
+									resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "a " + singleOrMultiples + " linear regression", studyDesign.DVs[i].type);
+									resultStr += generateNormality('Test your data using a normal QQ plot which draws a correlation between the given data and its normal distribution. If all points for each cell fall approximately along the reference line, you can assume normality. The plot can created using the <code>ggpubr</code> package.<br />', 'library(ggpubr)<br />ggqqplot(data, "' + studyDesign.DVs[i].name + '", ggtheme = theme_bw()) + facet_grid(' + getNamesFromArray(withinIVs, " ~ ", "name").slice(0, -3).replace(/[\~\%]/g, function(match, offset, all) { return match === "~" ? (all.indexOf("~") === offset ? '~' : '+') : ''; })  + ')', true); 
+									resultStr += tabPills(i, "Do the tests indicate that your data is normal distributed (all p&#8805; 0.05)?", "yes","no", parametricTestStr, nonparametricTestStr);  
+								} else {
+									resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "a Kendall-Theil Sen Siegel nonparametric linear regression", studyDesign.DVs[i].type);
+									resultStr += nonparametricTestStr
+								} 
+							}
+						}
+					}
+					
+					if(withinIVs.length == 0 && betweenIVs.length >= 1) { 
+						if(betweenIVs.length > 1 || betweenIVs[0].levels.length > 2) {
+							var parametricTestStr = generateCode('Your statistical test for parametric data', 'The test provided by the <code>rstatix</code>-package performs a multi-factorial ANOVA of independent samples','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ',  between = c(' + getNamesFromArray(betweenIVs, ", ", "name").slice(0, -2) + '))</br>get_anova_table(aov)'); 
+							parametricTestStr += generateCode('Your post hoc test for parametric data', 'Post hoc tests of interaction effects can computed with the <code>testInteraction()</code> procedure of the <code>phia</code> package in R. Such results are difficult to interpret. With main effects only you can perform pairwise comparisons using t-tests, e.g.:','library(rstatix)<br />t_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + betweenIVs[0].name + ')');
+							parametricTestStr += generateCode('Evaluate your effect size','To determine your main and interaction effect size <i>partial eta-squared</i> of a multi-factorial independent samples ANOVA you can use the following interpretation: 0.01 - 0.01 (small effect), 0.01 - 0.06 (moderate effect) and 0.06 - 0.14 (large effect).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', between = c(' + getNamesFromArray(betweenIVs, ", ", "name").slice(0, -2) + '), effect.size = "pes")</br>get_anova_table(aov)');
+							
+							var nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'The test by the <code>ARTool</code>-package performs a non-parametric ' + number2words(studyDesign.IVs.length) + '-factorial mixed-design ART-ANOVA.','library(ARTool)<br />art <- art(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + getNamesFromArray(studyDesign.IVs, " * ", "name").slice(0, -2) + '  )</br>anova(art)');
+							nonparametricTestStr += generateCode('The post hoc test for non-parametric data', 'Post hoc tests of interaction effects can computed with the <code>testInteraction()</code> procedure of the <code>phia</code> package in R. Such results are difficult to interpret. With main effects only you can perform pairwise comparisons using Wilcoxon signed-rank tests, e.g.:','library(rstatix)<br />wilcox_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + betweenIVs[0].name + ')');	
+							nonparametricTestStr += generateCode('Evaluate your effect size','Save your non-parametric ART-ANOVA model above. Add a new column with (SS/SS+SStotal) deriving your main and interaction effect size <i>partial eta-squared</i> and use the following interpretation: 0.01 - 0.01 (small effect), 0.01 - 0.06 (moderate effect) and 0.06 - 0.14 (large effect).','anova.art <- anova(art)<br />anova.art$eta.sq.part = anova.art$`Sum Sq`/(anova.art$`Sum Sq` + anova.art$`Sum Sq.res`)<br />anova.art');
+ 
+							if(studyDesign.DVs[i].type == "R" || studyDesign.DVs[i].type == "I") { 
+								// independent ANOVA 
+								resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "a " + number2words(studyDesign.IVs.length) + "-factorial independent samples ANOVA", studyDesign.DVs[i].type);
+								resultStr += generateNormality('Your settings suggest that you can potentially apply parametric tests. Before doing so you must check your conditions for normal distribution using the test by Shapiro-Wilk.','library(rstatix)<br />library(tidyverse)<br />data %>% group_by(' + getNamesFromArray(nominalIVs, ", ", "name").slice(0, -2) + ') %>% shapiro_test(' + studyDesign.DVs[i].name + ')', true); 
+								resultStr += (($("#samplesInputId").val() > 50) ? '<div class="mt-3">Your sample size is greater than 50. If any of the Shapiro-Wilk\'s tests is significant, your can also test your data using a normal QQ plot which draws a correlation between the given data and its normal distribution. If all points for each cell fall approximately along the reference line, you can assume normality of the data without Shapiro-Wilk\'s test. The plot can created using the <code>ggpubr</code> package.<br /> <code>library(ggpubr)<br />ggqqplot(data, "' + studyDesign.DVs[i].name + '", ggtheme = theme_bw()) + facet_grid(' + getNamesFromArray(withinIVs, " ~ ", "name").slice(0, -3).replace(/[\~\%]/g, function(match, offset, all) { return match === "~" ? (all.indexOf("~") === offset ? '~' : '+') : ''; })  + ')</code></div>' : '')							
+								resultStr += tabPills(i, "Do the tests indicate that your data is normal distributed (all p&#8805; 0.05 for all conditions)?", "yes","no", parametricTestStr, nonparametricTestStr); 
+							}  else {  
+								// independent non-parametric (ART) ANOVA
+								resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "a " + number2words(studyDesign.IVs.length) + "-factorial aligned-rank transform (ART) ANOVA of independent samples", studyDesign.DVs[i].type);
+								resultStr += nonparametricTestStr; 
+							}
+						}  else { // independent t-test 
+							var parametricTestStr = generateCode('Your statistical test for parametric data', 'A classical t-test between two independent samples.','library(rstatix)<br />t_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = FALSE)');	
+							parametricTestStr += generateCode('Evaluate your effect size','Effect sizes for independent t-tests <i>d</i> poposed by Cohen, are: 0.1 - 0.2 (small effect), 0.2 - 0.5 (moderate effect) and 0.5 - 0.8 (large effect) (Cohen 1998, Navarro (2015)). This means that if two groups\' means don\'t differ by 0.2 standard deviations or more, the difference is trivial, even if it is statistically significant.','library(rstatix)<br />cohens_d(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = FALSE)');
+							
+							var nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'A non-parametric test between two independent samples.','library(rstatix)<br />wilcox_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = FALSE)');  
+							nonparametricTestStr += generateCode('Evaluate your effect size','The interpretation of the effect size of a non-parametric test between two independent samples <i>r</i> is commonly: 0.1 - 0.3 (small effect), 0.3 - 0.5 (moderate effect) and > 0.5 (large effect).','library(rstatix)<br />wilcox_effsize(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = FALSE)');
+							
+							if(studyDesign.DVs[i].type == "R" || studyDesign.DVs[i].type == "I") {  
+								resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "an independent t-test", studyDesign.DVs[i].type);
+								resultStr += generateNormality('Your settings suggest that you can potentially apply parametric tests. Before doing so you must check your conditions for normal distribution using the test by Shapiro-Wilk.','library(rstatix)<br />library(tidyverse)<br />data %>% group_by(' + getNamesFromArray(nominalIVs, ", ", "name").slice(0, -2) + ') %>% shapiro_test(' + studyDesign.DVs[i].name + ')', true); 
+								resultStr += (($("#samplesInputId").val() > 50) ? '<div class="mt-3">Your sample size is greater than 50. If any of the Shapiro-Wilk\'s tests is significant, your can also test your data using a normal QQ plot which draws a correlation between the given data and its normal distribution. If all points for each cell fall approximately along the reference line, you can assume normality of the data without Shapiro-Wilk\'s test. The plot can created using the <code>ggpubr</code> package.<br /> <code>library(ggpubr)<br />ggqqplot(data, "' + studyDesign.DVs[i].name + '", ggtheme = theme_bw()) + facet_grid(' + getNamesFromArray(withinIVs, " ~ ", "name").slice(0, -3).replace(/[\~\%]/g, function(match, offset, all) { return match === "~" ? (all.indexOf("~") === offset ? '~' : '+') : ''; })  + ')</code></div>' : '') 
+								resultStr += tabPills(i, "Do the tests indicate that your data is normal distributed (all p&#8805; 0.05 for all conditions)?", "yes","no", parametricTestStr, nonparametricTestStr);  
+							} else {  // independent non-parametric test
+								resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "a Mann-Whitney U test (a.k.a. two-sample Wilcoxon test)", studyDesign.DVs[i].type);
+								resultStr += nonparametricTestStr; 
+							}
+						}
+					}
+					resultStr += generateAccordionFooter();  
+				});
+			}
+			$("#results").html("<div class='accordion'>" + resultStr + "</div>");
+		} 
+		
+		function arrayToDesignSequence(array, type, num) {
+			var str = '<div class="table-responsive"><table class="table" ">';
+			str += '<thead><tr>';
+			for(var i = 0; i < array.length; i++) {
+				if(i == 0) str += '<th scope="col"><strong>Subject</strong></th>';
+				if(array.length > 10) str += '<th scope="col"><strong>Cond. ' + (i + 1) + ' </strong></th>';
+				if(array.length <= 10) str += '<th scope="col"><strong>Condition ' + (i + 1) + ' </strong></th>';
+			}
+			str += '</tr></thead><tbody>';
+			
+			if(type == "latinSquare"){
+				for(var n = 0; n < array.length; n++) {
+					str += '<tr>';
+					for(var i = 0; i < array.length; i++) {
+						if(i == 0) str += '<th scope="row"><strong>' + (n + 1) + '</strong></th>';
+						str += '<th><small>' + balancedLatinSquare(array, n)[i] + '</small></th>'; 
+					} 
+					str += '</tr>';
+				}
+			}
+			
+			if(type == "permutations"){
+				for(var n = 0; n < permutations(array).length; n++) {
+					str += '<tr>';
+					for(var i = 0; i < array.length; i++) {
+						if(i == 0) str += '<th scope="row"><strong>' + (n + 1) + '</strong></th>'; 
+						str += '<th><small>' + permutations(array)[n][i] + '</small></th>'; 
+					}
+					str += '</tr>';
+				} 
+			}
+			
+			if(type == "shuffle"){
+				for(var n = 0; n < num; n++) {
+					str += '<tr>';
+					for(var i = 0; i < array.length; i++) {
+						if(i == 0) str += '<th scope="row"><strong>' + (n + 1) + '</strong></th>'; 
+						str += '<th><small>' + shuffle(array, n)[i] + '</small></th>'; 
+					}
+					str += '</tr>';
+				}
+			}
+			
+			if(type == "between"){ 
+				str += '<tr>';
+				for(var i = 0; i < array.length; i++) {
+					if(i == 0) str += '<th scope="row"><strong>Name</strong></th>'; 
+					str += '<th><small>' + array[i] + '</small></th>'; 
+				}
+				str += '</tr>'; 
+				for(var n = 1; n < 4; n++) {
+					str += '<tr>';
+					for(var i = 0; i < array.length; i++) {
+						if(i == 0) str += '<th scope="row"><strong>Samples (N = ' + num * n + ')</strong></th>'; 
+						str += '<th><small>' + num * n / array.length + ' subjects </small></th>'; 
+					} 
+					str += '</tr>'; 
+				}
+				str += '<tr>'; 
+				for(var i = 0; i < array.length; i++) {
+					if(i == 0) str += '<th scope="row"><strong>...</strong></th>'; 
+					str += '<th><small>...</small></th>'; 
+				}
+				str += '</tr>'; 
+				str += '<tr>'; 
+				for(var i = 0; i < array.length; i++) {
+					if(i == 0) str += '<th scope="row"><strong>Samples in %</strong></th>'; 
+					str += '<th><small>' + ( 100 / array.length ) + '%</small></th>'; 
+				}
+				str += '</tr>'; 
+			}
+			str += '</tbody></table></div>';
+			return str;
+		}
+		
+		function getDataTypeIcon(val) {
+			if(val == "N") return '<i class="bi bi-palette2 me-1"></i>';
+			if(val == "O") return '<i class="bi bi-reception-4 me-1"></i>';
+			if(val == "I") return '<i class="bi bi-rulers me-1"></i>';
+			if(val == "R") return '<i class="bi bi-speedometer me-1"></i>'; 
+			if(val == "M") return '<i class="bi bi-kanban me-1"></i>'; 
+			if(val == "H") return '<i class="bi bi-filter-square-fill me-1"></i>'; 
+		}
+		
+		function getNamesFromArray(array, separator, name) {
+			var str = ""; 
+			$.each(array, function(i){
+				if(name != null) str += array[i][name];
+				else str += array[i]; str += separator; 
+			});
+			return str;
+		}
+		
+		function getItemsInArray(array, variable, name) {
+			var filteredArray = [];
+			$.each(array, function(i){ if(array[i][variable] == name) filteredArray.push(array[i]); });
+			return filteredArray;
+		}
+		
+		function setSlider(slider, label, val, min, max, steps) {
+			$(slider).prop("step", steps);
+			$(slider).prop("min", min);
+			$(slider).prop("max", max);
+			if(!manualSubjectUpdate) $(slider).val(val);
+			if(!manualSubjectUpdate) $(label).val(val);  
+			return $(slider).val();
+		}
+		
+		const calculateMean = (values) => {
+			const mean = (values.reduce((sum, current) => sum + current)) / values.length;
+			return mean;
+		}; 
+
+		const getVariance = (values) => {
+			const average = calculateMean(values);
+			const squareDiffs = values.map((value) => {
+				const diff = value - average;
+				return diff * diff;
+			});
+			const variance = calculateMean(squareDiffs);
+			return variance;
+		};
+		
+		const getSD = (variance) => {
+			return Math.sqrt(variance);
+		};
+		
+		function getSampleSize(cv, pc, n, a) { 
+			if (a == 0) a = 1;
+			var Nb = (16 * (Math.pow(cv, 2) / (Math.pow(Math.log(1 - pc), 2))));
+			var Nw = Nb * ((1 - 0.5) / a)
+			return Nw;
+			// https://stats.stackexchange.com/questions/11131/sample-size-formula-for-an-f-test#:~:text=Lehr's%20formula%20for%20t%2Dtests,sided%20or%20two%20sided%20test.
+		}
+		
+		function getEffectSizedz(delta, sd, corr) {   
+			return (1 - getEffectSized(delta, sd)) / Math.sqrt(2 * ( 1 - corr)); 
+		}
+		
+		function getEffectSized(delta, sd) {   
+			return delta / (Math.sqrt((Math.pow(sd, 2) + Math.pow(sd, 2))/2)); 
+		}
+		
+		function getEffectSizef(d, k, corr) {   
+			return Math.sqrt((Math.pow(d, 2) / (2 * k))); 
+		} 
+		
+		function roundUp(x,y) {
+			return Math.ceil(x/y)*y;
+		}
+		
+		function shuffle(array, seed) {
+			Math.seedrandom(seed);
+			var j, tmp;
+			for (var i = array.length - 1; i > 0; i--) {
+				j = Math.floor(Math.random() * (i + 1));
+				tmp = array[i];
+				array[i] = array[j];
+				array[j] = tmp;
+			}
+			return array;
+		}
+		
+		function permutations(xs, n) {
+			var result = [];
+			for (var i = 0; i < xs.length; i = i + 1) {
+				var rest = permutations(xs.slice(0, i).concat(xs.slice(i + 1)));
+				if(!rest.length) {
+					result.push([xs[i]])
+				} else {
+					for(var j = 0; j < rest.length; j = j + 1) {
+						result.push([xs[i]].concat(rest[j]))
+					}
+				}
+			} 
+			return result;
+		} 
+		
+		function balancedLatinSquare(array, subjectId) {
+			var result = []; 
+			for (var i = 0, j = 0, h = 0; i < array.length; ++i) {
+				var val = 0;
+				if (i < 2 || i % 2 != 0) {
+					val = j++;
+				} else {
+					val = array.length - h - 1;
+					++h;
+				}
+
+				var idx = (val + subjectId) % array.length;
+				result.push(array[idx]);
+			}
+
+			if (array.length % 2 != 0 && subjectId % 2 != 0) {
+				result = result.reverse();
+			}
+
+			return result;
+		}
+ 
+		function example2x3Within(){  
+			resetStudyDesign(); 
+			$('[id*=buttonDV_]').each(function(i) { $(this).click(); });
+			$('[id*=buttonIV_]').each(function(i) { $(this).click(); });
+			serverANOVARequestRunning = true; 
+			$("input[name='nameIV']").val("Prototype");
+			$("select[name='selectIVType'] option:eq(1)").prop("selected", true);
+			$("select[name='selectIVwithin'] option:eq(1)").prop("selected", true);
+			$("input[name='enterLevelsIV']").val("Prototype A, Prototype B");
+			$("#addIV").click();
+			$("input[name='nameIV']").val("Scenario");
+			$("select[name='selectIVType'] option:eq(1)").prop("selected", true);
+			$("select[name='selectIVwithin'] option:eq(1)").prop("selected", true);
+			$("input[name='enterLevelsIV']").val("Scenario A, Scenario B, Scenario C");
+			$("#addIV").click(); 			
+			$("input[name='nameDV']").val("Presence");	
+			$("select[name='selectDVType'] option:eq(4)").prop("selected", true);
+			$("#addDV").click();
+			$("input[name='nameDV']").val("Throughput");
+			$("select[name='selectDVType'] option:eq(4)").prop("selected", true);
+			$("#addDV").click();
+			$("input[name='nameDV']").val("Clicks");
+			$("select[name='selectDVType'] option:eq(2)").prop("selected", true);
+			$("#addDV").click();
+			serverANOVARequestRunning = false;
+			$("input[name='nameDV']").val("Distance");
+			$("select[name='selectDVType'] option:eq(3)").prop("selected", true);
+			$("#addDV").click();
+		}
+ 
+		function example2x4Mixed(){  
+			 resetStudyDesign();
+			$('[id*=buttonDV_]').each(function(i) { $(this).click(); });
+			$('[id*=buttonIV_]').each(function(i) { $(this).click(); });
+			serverANOVARequestRunning = true;
+			$("input[name='nameIV']").val("Gender");
+			$("select[name='selectIVType'] option:eq(1)").prop("selected", true);
+			$("select[name='selectIVwithin'] option:eq(2)").prop("selected", true);
+			$("input[name='enterLevelsIV']").val("men, women");
+			$("#addIV").click();  
+			$("input[name='nameIV']").val("Prototype");
+			$("select[name='selectIVType'] option:eq(1)").prop("selected", true);
+			$("select[name='selectIVwithin'] option:eq(1)").prop("selected", true);
+			$("input[name='enterLevelsIV']").val("Prototype A, Prototype B, Prototype C, Prototype D");
+			$("#addIV").click();			
+			$("input[name='nameDV']").val("Words per Minute");	
+			$("select[name='selectDVType'] option:eq(4)").prop("selected", true);
+			$("#addDV").click();
+			$("input[name='nameDV']").val("Characters per Minute");
+			$("select[name='selectDVType'] option:eq(4)").prop("selected", true);
+			$("#addDV").click();
+			serverANOVARequestRunning = false;
+			$("input[name='nameDV']").val("Correct Answers");
+			$("select[name='selectDVType'] option:eq(2)").prop("selected", true);
+			$("#addDV").click(); 
+		}
+ 
+		function exampleRegression(){  
+			resetStudyDesign();
+			$('[id*=buttonDV_]').each(function(i) { $(this).click(); });
+			$('[id*=buttonIV_]').each(function(i) { $(this).click(); });
+			serverRegressionRequestRunning = true;  
+			$("input[name='nameIV']").val("Volume");
+			$("select[name='selectIVType'] option:eq(4)").prop("selected", true);
+			$("select[name='selectIVwithin'] option:eq(1)").prop("selected", true); 
+			$("#addIV").click();
+			$("input[name='nameIV']").val("Workload");
+			$("select[name='selectIVType'] option:eq(4)").prop("selected", true);
+			$("select[name='selectIVwithin'] option:eq(1)").prop("selected", true); 
+			$("#addIV").click();			
+			$("input[name='nameDV']").val("Words per Minute");	
+			$("select[name='selectDVType'] option:eq(4)").prop("selected", true);
+			$("#addDV").click();
+			serverRegressionRequestRunning = false;
+			$("input[name='nameDV']").val("Characters per Minute");
+			$("select[name='selectDVType'] option:eq(4)").prop("selected", true);
+			$("#addDV").click(); 
+		}
+		
+		function generate() { }  
+
+		function number2words(n){
+			var num = "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split(" ");
+			var tens = "twenty thirty forty fifty sixty seventy eighty ninety".split(" ");
+			if (n < 20) return num[n];
+			var digit = n%10;
+			if (n < 100) return tens[~~(n/10)-2] + (digit? "-" + num[digit]: "");
+			if (n < 1000) return num[~~(n/100)] +" hundred" + (n%100 == 0? "": " and " + number2words(n%100));
+			return number2words(~~(n/1000)) + " thousand" + (n%1000 != 0? " " + number2words(n%1000): "");
+		}
+		
+		function combineArrays( array_of_arrays ){ 
+			if(!array_of_arrays) return [];
+			if(!Array.isArray(array_of_arrays)) return [];
+			if( array_of_arrays.length == 0 ) return [];
+
+			for(let i = 0; i < array_of_arrays.length; i++ ){
+				if(!Array.isArray(array_of_arrays[i]) || array_of_arrays[i].length == 0 ) return []; 
+			}
+  
+			let odometer = new Array( array_of_arrays.length );
+			odometer.fill(0);  
+			let output = [];
+			let newCombination = formCombination( odometer, array_of_arrays );
+			output.push( newCombination );
+
+			while ( odometer_increment( odometer, array_of_arrays ) ){
+				newCombination = formCombination( odometer, array_of_arrays );
+				output.push( newCombination );
+			}
+
+			return output;
+		}
+		
+		function onlyUniqueValuesInArray(value, index, self) {
+			return self.indexOf(value) === index;
+		}
+
+ 
+		function formCombination( odometer, array_of_arrays ){ 
+			return odometer.reduce(
+			function(accumulator, odometer_value, odometer_index){
+				return "" + accumulator + array_of_arrays[odometer_index][odometer_value] + "-";
+			}, "");
+		}
+
+		function odometer_increment( odometer, array_of_arrays ){
+			for( let i_odometer_digit = odometer.length-1; i_odometer_digit >=0; i_odometer_digit-- ){ 
+				let maxee = array_of_arrays[i_odometer_digit].length - 1;         
+				if( odometer[i_odometer_digit] + 1 <= maxee ){
+					odometer[i_odometer_digit]++;
+					return true;
+				} else{
+					if( i_odometer_digit - 1 < 0 ){	return false;}
+					else{
+						odometer[i_odometer_digit]=0;
+						continue;
+					}
+				}
+			}
+		}
+		 
+	</script>
+ </body>
+</html>
