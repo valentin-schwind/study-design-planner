@@ -1,10 +1,5 @@
 powerANOVA <- function(studyDesign, N, means, SD, labels, wcorr, alpha) {
-  if (!requireNamespace("Superpower", quietly = TRUE)) {
-    stop(
-      "Package \"Superpower\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
+
   round_df <- function(df, digits = 3) {
     nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
     df[,nums] <- round(df[,nums], digits = digits)
