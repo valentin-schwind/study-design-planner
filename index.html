@@ -1,184 +1,207 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<!-- Required meta tags -->
+	<!-- Meta tags required for responsive design and character encoding -->
 	<meta charset="iso-8859-1">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="author" content="Valentin Schwind">
+
+	<!-- Eliminating duplicate meta tags for viewport -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
- <!-- Bootstrap CSS -->
+
+	<!-- Bootstrap CSS and custom stylesheets -->
 	<link rel="stylesheet" href="css/bootstrap.min.css">
 	<link rel="stylesheet" href="css/bootstrap-table.min.css" />  
 	<link rel="stylesheet" href="css/bootstrap-icons.css">
 	<link rel="stylesheet" href="css/style.css" />  
+
+	<!-- Favicon for the website -->
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+
+	<!-- Meta tag for defining the site name -->
 	<meta property="og:site_name" content="Study Design and Statistical Test Planner">	
+
+	<!-- Title of the webpage -->
 	<title>Study Design Generator</title>	
 </head>
- <body class="transparent">
+
+<body class="transparent">
+	<!-- Scripts for various functionalities and libraries -->
 	<script src="js/countryList.js"></script> 
 	<script src="js/jquery-3.6.0.min.js"></script>
 	<script src="js/jquery-ui.js"></script>    
 	<script src="js/bootstrap.bundle.min.js"></script>
 	<script src="js/bootstrap-table.min.js"></script>
-	<script src="js/bootstrap-table-zh-CN.min"></script>
+	<script src="js/bootstrap-table-zh-CN.min.js"></script>
 	<script src="js/seedrandom.min.js"></script> 
 	<script src="js/statistics.min.js"></script> 
 	<script src="js/opencpu-0.5.js"></script>
     
 	<div id="mainFrame" class="vertical-center">
 		<div id="demographicsPage" class="whiteBox container rounded">
-			
-				<div id="input">
-                    <div class="row">
-                        <div class="col mt-4">
-                            <a href="https://hci-studies.org"><img src="img/frankfurtlogo.png" class="float-end me-3" width="140px" alt="Interaction Lab Logo"></a>
-                        </div>
-                    </div>
-                    <div class="row mt-3 align-items-center">
-                        <div class="col">
-                            <h3 id="demographicsTitle">Study Design and Statistical Test Planner</h3>
-                        </div>
-                    </div>
-                    <hr /> 
-					<form id="IVForm" class="form-horizontal"  action="javascript:generate(this);">
-						<div class="row mt-1 align-items-center">
-							<div class="col-4"><span id="selectIVText">Add your independent variables (IV)?</span><span class="text-danger">*</span><br /></div>
-							<div class="col-2"><input class="form-control" name="nameIV" required></input></div>
-							<div class="col-5"><select class="form-control" name="selectIVType" required></select></div>
-							<div class="col-1"><button class="btn btn-primary btn-md float-right" type="submit"  id="addIV">Add</button></div>
-						</div> 
-						 <div class="row mt-1 align-items-center" id="withinIV" >
-							<div class="col-4"></div>
-							<div class="col-2 "><span class="align-items-center" >IV design</span></div>
-							<div class="col-5"><select class="form-control" name="selectIVwithin" required></select></div>
-						</div> 
-						 <div class="row mt-1 align-items-center" id="levelsIV" >
-							<div class="col-4"></div>
-							<div class="col-2 "><span class="align-items-center" >with levels</span></div>
-							<div class="col-5"><input class="form-control" name="enterLevelsIV" required></input></div>
-						</div> 
-						<div class="row mt-1 align-items-center">  
-							<div class="col-4 mt-3 me-0"></div>   
-							<div class="col-8 mt-1 ms-0 "><ul class="ms-0 " id="listIV"></ul></div>  
-						</div> 
-					</form>
-					<form id="DVForm" class="form-horizontal" action="javascript:generate(this);">
-						<div class="row mt-1 align-items-center" id="rowDV">
-							<div class="col-4"><span id="selectDVText">Add your dependent variables (DV)?</span><span class="text-danger">*</span><br /></div>
-							<div class="col-2"><input class="form-control" name="nameDV" ></input></div>
-							<div class="col-5"><select class="form-control" name="selectDVType" ></select></div>
-							<div class="col-1"><button class="btn btn-primary btn-md float-right"  id="addDV">Add</button></div> 
-							<div class="col-4 me-0"></div>   
-							<div class="col-8 mt-1 ms-0"><ul class="ms-0" id="listDV"></ul></div> 
-						</div> 
-					</form>
-					
-					<div class="row mt-1 " id="cellVARIANCE">  						
-						<div class="col-4 mt-2 "><span>Highest standard deviation of your DVs (in %):</span><br /></div>
-						<div class="col-8 mt-3 " ><form name="sampleForm">
-							<input type="range" name="varianceInputName" style="width: 300px" id="varianceInputId" value="0.15" min="0" max="1" step="0.01" oninput="varianceOutputId.value = Math.floor((varianceInputId.value * 100),0) + ' %'"> 
-							<output name="varianceOutputName" id="varianceOutputId">15 %</output>
-							<!--<output name="varianceOutputLabelName" id="varianceOutputLabelId">medium</output>-->
-						</form></div> 
-					</div> 
-					<div class="row mt-1 " id="cellEFFECTSIZE">  						
-						<div class="col-4 mt-2 "><span>Smallest estimated DV mean difference (in %):</span><br /></div>
-						<div class="col-8 mt-3 " ><form name="sampleForm">
-							<input type="range" name="meanDeltaInputName" style="width: 300px" id="meanDeltaInputId" value="0.10" min="0.01" max="1" step="0.01" oninput="effectsizeOutputId.value = Math.floor((meanDeltaInputId.value * 100),0) + ' %'"> 
-							<output name="effectsizeOutputName" id="effectsizeOutputId">10 %</output>
-							<!--<output name="effectsizeOutputLabelName" id="effectsizeOutputLabelId">medium</output>-->
-						</form></div> 
-					</div>  
-					<div class="row" id="cellMANOVA">  
-						<div class="col-4"><span></span><br /></div>
-						<div class="col-8 ms-0" ><input type="checkbox" class="form-check-input me-2" name="manovaCheckBox" id="manovaCheckBox"><label class="form-check-label" for="manovaCheckBox">Include test for effects <i>across</i> all DVs (MANOVA avoids Type-1 errors with too many DVs)</label></div>
-					</div> 
-					<div class="row" id="cellEQUIVALENCE">  						
-						<div class="col-4"><span></span><br /></div>
-						<div class="col-8 ms-0" ><input type="checkbox" class="form-check-input me-2" name="equivalenceCheckBox" id="equivalenceCheckBox"><label class="form-check-label" for="equivalenceCheckBox">test for equivalence (noninferiority)</label></div>
-					</div> 
-					<div class="row mt-1 " id="cellSAMPLES">  						
-						<div class="col-4 mt-2 "><span>Subjects (N estimated by <a target="_blank" href='https://onlinelibrary.wiley.com/doi/10.1002/sim.4780110811'>Lehr's "Rule of 16")</a>:</span><br /></div>
-						<div class="col-8 mt-3 " ><form name="sampleForm">
-							<input type="range" name="samplesInputName" style="width: 300px" id="samplesInputId" value="24" min="0" max="200" oninput="samplesOutputId.value = samplesInputId.value">
-							<output name="samplesOutputName" id="samplesOutputId">24</output>
-						</form></div> 
-					</div> 
-					<hr /> 
-					<div id="resultsPanel">
-						<div class="row mb-2 " id="rowWAIT">  
-							<div class="col-12 mt-2 me-0 mb-1 "><span><h5 class="text-center">Please wait...</h5></span></div> 
-						</div>						
-						<div class="row mb-2 " id="rowES">  
-							<div class="col-12 mt-2 me-0 mb-1 "><span><h5>Statistical Power and Effect Sizes:</h5></span></div>
-							<div class="col-12 mt-2 ms-0 mb-1 "><span id="power"></span></div>    
-						</div>
-						<div class="row mb-2 " id="rowED">  
-							<div class="col-12 mt-2 me-0 mb-1 "><span><h5>Instructions for your experimental design:</h5></span></div>
-							<div class="col-12 mt-2 ms-0 mb-1 "><span id="design"></span></div>    
-						</div>
-						<div class="row mb-2 " id="rowST">  
-							<div class="col-12 mt-2 me-0 mb-1 "><span><h5>Instructions for your statistical test(s):</h5></span></div>
-							<div class="col-12 mt-2 ms-0 mb-1 "><div id="results"></div></div>    
-						</div> 
-						<div class="row mt-2 itemRow">
-							<div class="col" > 
-								<a id="btnExample2x3Within" class="btn btn-secondary btn-md float-left me-3 " >Example 2x3 Within Design</a> 
-								<a id="btnExample2x4Mixed" class="btn btn-secondary btn-md float-left me-3 " >Example 2x3 Mixed-Design</a> 
-								<a id="btnExampleRegression" class="btn btn-secondary btn-md float-left me-3 " >Example Regression</a> 
-								<!--<button id="btnGenerate" class="btn btn-primary btn-md float-right" type="Submit">Generate</button> -->
-							</div>
-						</div> 
-                    </div> 
-				<div class="row mt-2 mb-2 itemRow" id="githublink">
-					<div class="col" > 
-						<a href="https://github.com/valentin-schwind/study-design-planner">Source Code on github</a>
+			<div id="input">
+				<div class="row">
+					<div class="col mt-4">
+						<a href="https://hci-studies.org"><img src="img/frankfurtlogo.png" class="float-end me-3" width="140px" alt="Interaction Lab Logo"></a>
 					</div>
 				</div>
+				<div class="row mt-3 align-items-center">
+					<div class="col">
+						<h2 id="demographicsTitle">Study Design and Statistical Test Planner</h2>
+					</div>
+				</div>
+				<hr />
+				<div class="row">
+					<div class="col mt-1 mb-1 "> 
+						<p>This tool is designed to plan and evaluate your study for your HCI research. Enter your independent and dependent variables for study design proposals, sample and power estimation, as well as statistical analysis for <a href="https://cran.r-project.org/" target="_blank">R</a>. This tool only offers tips and help for beginners for quick start and is not a substitute for extensive research or input of your supervisor.</p>
+					</div>
+				</div>
+				<hr /> 
+				<form id="IVForm" class="form-horizontal"  action="javascript:generate(this);">
+					<div class="row mt-1 align-items-center">
+						<div class="col-4"><span id="selectIVText">Add your independent variables (IV)?</span><span class="text-danger">*</span><br /></div>
+						<div class="col-2"><input class="form-control" name="nameIV" required></input></div>
+						<div class="col-5"><select class="form-control" name="selectIVType" required></select></div>
+						<div class="col-1"><button class="btn btn-primary btn-md float-right" type="submit"  id="addIV">Add</button></div>
+					</div> 
+					 <div class="row mt-1 align-items-center" id="withinIV" >
+						<div class="col-4"></div>
+						<div class="col-2 "><span class="align-items-center" >IV design</span></div>
+						<div class="col-5"><select class="form-control" name="selectIVwithin" required></select></div>
+					</div> 
+					 <div class="row mt-1 align-items-center" id="levelsIV" >
+						<div class="col-4"></div>
+						<div class="col-2 "><span class="align-items-center" >with levels</span></div>
+						<div class="col-5"><input class="form-control" name="enterLevelsIV" required></input></div>
+					</div> 
+					<div class="row mt-1 align-items-center">  
+						<div class="col-4 mt-3 me-0"></div>   
+						<div class="col-8 mt-1 ms-0 "><ul class="ms-0 " id="listIV"></ul></div>  
+					</div> 
+				</form>
+				<form id="DVForm" class="form-horizontal" action="javascript:generate(this);">
+					<div class="row mt-1 align-items-center" id="rowDV">
+						<div class="col-4"><span id="selectDVText">Add your dependent variables (DV)?</span><span class="text-danger">*</span><br /></div>
+						<div class="col-2"><input class="form-control" name="nameDV" ></input></div>
+						<div class="col-5"><select class="form-control" name="selectDVType" ></select></div>
+						<div class="col-1"><button class="btn btn-primary btn-md float-right"  id="addDV">Add</button></div> 
+						<div class="col-4 me-0"></div>   
+						<div class="col-8 mt-1 ms-0"><ul class="ms-0" id="listDV"></ul></div> 
+					</div> 
+				</form>
 				
-			
+				<div class="row mt-1 " id="cellMEANDELTA">  						
+					<div class="col-4 mt-2 "><span>Estimated mean difference between min. and max. measures (in %):</span><br /></div>
+					<div class="col-8 mt-3 " ><form name="sampleForm">
+						<input type="range" name="meanDeltaInputName" style="width: 300px" id="meanDeltaInputId" value="0.20" min="0.01" max="1" step="0.01" oninput="effectsizeOutputId.value = Math.floor((meanDeltaInputId.value * 100),0) + ' %'"> 
+						<output name="effectsizeOutputName" id="effectsizeOutputId">20 %</output>
+						<!--<output name="effectsizeOutputLabelName" id="effectsizeOutputLabelId">medium</output>-->
+					</form></div> 
+				</div>  
+				<div class="row mt-1 " id="cellVARIANCE">  						
+					<div class="col-4 mt-2 "><span>Estimated pooled standard deviation (in % of the mean difference):</span><br /></div>
+					<div class="col-8 mt-3 " ><form name="sampleForm">
+						<input type="range" name="varianceInputName" style="width: 300px" id="varianceInputId" value="0.4" min="0" max="1" step="0.01" oninput="varianceOutputId.value = Math.floor((varianceInputId.value * 100),0) + ' %'"> 
+						<output name="varianceOutputName" id="varianceOutputId">40 %</output>
+						<!--<output name="varianceOutputLabelName" id="varianceOutputLabelId">medium</output>-->
+					</form></div> 
+				</div> 
+				<div class="row mt-1 " id="cellEFFECTSIZE">  						
+					<div class="col-4 mt-2 "><span>Estimated initial effect sizes:</span></div>
+					<div class="col-8 mt-2 " id="effectSizeLabel"></div> 
+				</div> 
+				<div class="row" id="cellEQUIVALENCE">  						
+					<div class="col-4"><span></span><br /></div>
+					<div class="col-8 ms-0" ><input type="checkbox" class="form-check-input me-2" name="equivalenceCheckBox" id="equivalenceCheckBox"><label class="form-check-label" for="equivalenceCheckBox">test for equivalence (noninferiority)</label></div>
+				</div> 
+				<div class="row mt-1 " id="cellSAMPLES">  						
+					<div class="col-4 mt-2 "><span>Subjects (N estimated by <a target="_blank" href='https://onlinelibrary.wiley.com/doi/10.1002/sim.4780110811'>Lehr's "Rule of 16")</a>:</span><br /></div>
+					<div class="col-8 mt-3 " ><form name="sampleForm">
+						<input type="range" name="samplesInputName" style="width: 300px" id="samplesInputId" value="24" min="0" max="200" oninput="samplesOutputId.value = samplesInputId.value">
+						<output name="samplesOutputName" id="samplesOutputId">24</output>
+					</form></div> 
+				</div> 
+				<div class="row" id="cellMANOVA">  
+					<div class="col-4"><span></span><br /></div>
+					<div class="col-8 ms-0" ><input type="checkbox" class="form-check-input me-2" name="manovaCheckBox" id="manovaCheckBox"><label class="form-check-label" for="manovaCheckBox">Include test for effects <i>across</i> all DVs (MANOVA avoids Type-1 errors with too many DVs)</label></div>
+				</div> 
+				<hr /> 
+				<div class="row">  
+					<div class="col-12 mt-2 me-0 mb-1 "><span><h5 class="text-center" id="rowWAIT"></h5></span></div> 
+				</div>	
+				<div id="resultsPanel">					
+					<div class="row mb-2 " id="rowES">  
+						<div class="col-12 mt-2 me-0 mb-1 "><span><h5>Statistical Power and Effect Sizes:</h5></span></div>
+						<div class="col-12 mt-2 ms-0 mb-1 "><span id="power"></span></div>    
+					</div>
+					<div class="row mb-2 " id="rowED">  
+						<div class="col-12 mt-2 me-0 mb-1 "><span><h5>Instructions for your experimental design:</h5></span></div>
+						<div class="col-12 mt-2 ms-0 mb-1 "><span id="design"></span></div>    
+					</div>
+					<div class="row mb-2 " id="rowST">  
+						<div class="col-12 mt-2 me-0 mb-1 "><span><h5>Instructions for your statistical test(s):</h5></span></div>
+						<div class="col-12 mt-2 ms-0 mb-1 "><div id="results"></div></div>    
+					</div> 
+					<div class="row mt-2 itemRow">
+						<div class="col" > 
+							<a id="btnExample2x3Within" class="btn btn-secondary btn-md float-left me-3 " >Example 2x3 Within-Subject Design</a> 
+							<a id="btnExample2x4Mixed" class="btn btn-secondary btn-md float-left me-3 " >Example 2x4 Mixed-Design</a> 
+							<a id="btnExampleRegression" class="btn btn-secondary btn-md float-left me-3 " >Example Regression</a> 
+							<!--<button id="btnGenerate" class="btn btn-primary btn-md float-right" type="Submit">Generate</button> -->
+						</div>
+					</div> 
+				</div> 
+			<div class="row mt-2 mb-2 itemRow" id="githublink">
+				<div class="col" > 
+					<a href="https://github.com/valentin-schwind/study-design-planner">Source Code on github</a>
+				</div>
+			</div> 
+			<div class="row">
+				<div class="col mb-2 "> 
+					<p><a href="https://valentin-schwind.de">Prof. Dr. Valentin Schwind</a>. University of Applied Sciences Frankfurt. No liability for external links, correctness, completeness and up-todateness of any content. Site visits might result in storing of anonymized data (date, time, page viewed). Utilization at the own risk of the user. Data can be stored on the computers to facilitate the user's website access. Contribute <a href="https://github.com/stars/valentin-schwind/lists/hci-user-studies-toolkit">here</a>.</p><p><strong>Find/cite the publication of the toolkit here: </strong><br /><code>Valentin Schwind, Stefan Resch, and Jessica Sehrt. 2023. The HCI User Studies Toolkit: Supporting Study Designing and Planning for Undergraduates and Novice Researchers in Human-Computer Interaction. In Extended Abstracts of the 2023 CHI Conference on Human Factors in Computing Systems (CHI EA '23), April 23-28, 2023, Hamburg, Germany. ACM, New York, NY, USA, 7 pages. <a href="https://doi.org/10.1145/3544549.3585890" target="_blank">https://doi.org/10.1145/3544549.3585890</a></code></p>
+				</div>
+			</div>
 		</div> 
 	</div>
  
 	<script>
-		var debug = false;
-		var IVs = 0;
-		var DVs = 0;
-		var manualEffectSizeUpdate = false;
-		var manualSubjectUpdate = false; 
-		var serverANOVARequestRunning = false; 
-		var serverRegressionRequestRunning = false; 
-		var serverSAMPLERequestRunning = false; 
-		var studyDesign;
-		var runningLocal = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "")
-		
+		var debug = false; // Flag for enabling debug mode
+		var IVs = 0; // Counter for Independent Variables (IVs)
+		var DVs = 0; // Counter for Dependent Variables (DVs)
+		var manualEffectSizeUpdate = false; // Flag for manual effect size update
+		var manualSubjectUpdate = false; // Flag for manual subject update
+		var serverANOVARequestRunning = false; // Flag for ANOVA request status
+		var serverRegressionRequestRunning = false; // Flag for regression request status
+		var serverSAMPLERequestRunning = false; // Flag for SAMPLE request status
+		var studyDesign; // Object to hold study design details
+		var sampleSize; // Variable to store sample size
+		var runningLocal = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === ""); // Check if running locally
+
+		// Set server URL based on running mode (Local or Online)
 		if(!runningLocal) {
-			ocpu.seturl("//cloud.opencpu.org/ocpu/library/base/R")
-			ocpu.seturl("//cloud.opencpu.org/ocpu/library/stats/R")
-			ocpu.seturl("//valentin-schwind.ocpu.io/study-design-planner/R") 
-			console.log("RUNNING IN ONLINE MODE")
+			ocpu.seturl("https://jupyter.hci-studies.org:5656/ocpu/library/powerAnalysis/R"); 
+			console.log("RUNNING IN ONLINE MODE");
 		} else {
-			console.log("RUNNING IN LOCAL MODE")
+			console.log("RUNNING IN LOCAL MODE");
 		}
-		
+	
+		// Resets study design to its initial state
 		function resetStudyDesign() {
 			studyDesign = {
-				"IVs" : [],
-				"DVs" : [],  
-				"MANOVA" : false,
-				"betweenIVs" : [],
-				"withinIVs" : [],
-				"allBetweenLevels" : [],
-				"allWithinLevels" : [],			
-				"allConditions" : [],			
-				"allCombinations" : []			
-			}	
+				"IVs": [],
+				"DVs": [],
+				"MANOVA": false,
+				"betweenIVs": [],
+				"withinIVs": [],
+				"allBetweenLevels": [],
+				"allWithinLevels": [],
+				"allConditions": [],
+				"allCombinations": []
+			};    
 		}
 		 
-		$(document).ready(function() {  
+		$(document).ready(function() { 
 			resetStudyDesign();
 			
 			$("#levelsIV").hide();
@@ -188,13 +211,14 @@
 			$("#rowED").hide();
 			$("#rowES").hide();
 			$("#rowST").hide(); 
-			$("#rowWAIT").hide();
+			$("#rowWAIT").text("");
 			
 			$("#cellMANOVA").hide();
 			$("#cellEQUIVALENCE").hide();
 			$("#cellSAMPLES").hide();
 			$("#cellVARIANCE").hide();
 			$("#cellEFFECTSIZE").hide();
+			$("#cellMEANDELTA").hide();
 			
 			$("input[name='nameDV']").attr('placeholder', "Enter DV name...");
 			$("input[name='enterLevelsIV']").attr('placeholder', "Enter levels (comma-separated)");
@@ -367,6 +391,7 @@
 					$("#cellSAMPLES").hide();
 					$("#cellVARIANCE").hide();
 					$("#cellEFFECTSIZE").hide();
+					$("#cellMEANDELTA").hide();
 					$("#cellMANOVA").hide();
 				}	 	 
 				
@@ -374,12 +399,13 @@
 					$("#cellSAMPLES").show();
 					$("#cellVARIANCE").show();
 					$("#cellEFFECTSIZE").show();
+					$("#cellMEANDELTA").show();
 				} else {
 					$("#cellSAMPLES").hide();
 					$("#cellVARIANCE").hide();
 					$("#cellEFFECTSIZE").hide();
+					$("#cellMEANDELTA").hide();
 					$("#cellMANOVA").hide();
-					$("#rowWAIT").hide();
 				}
 			}
 			
@@ -430,9 +456,10 @@
 				} else {
 					$("#addDV").removeClass('disabled');
 				}	 
-				
+				$("#rowWAIT").text("Please wait...");
 				$("#cellSAMPLES").show();
 				$("#cellVARIANCE").show();
+				$("#cellMEANDELTA").show();
 				$("#cellEFFECTSIZE").show();
 			}); 
 			 
@@ -518,9 +545,16 @@
 				
 				console.log(studyDesign); 
 				
-				var sampleSize = requestSampleSizeFromOpenCPU(parseFloat($("#meanDeltaInputId").val()), parseFloat( $("#varianceInputId").val())); //Math.floor(getSampleSize($("#varianceInputId").val(), $("#meanDeltaInputId").val(), studyDesign.allConditions.length, studyDesign.withinConditions.length), 0);				
+				sampleSize = requestSampleSizeFromOpenCPU(parseFloat($("#meanDeltaInputId").val()), Math.pow(parseFloat( $("#varianceInputId").val()),2)); //Math.floor(getSampleSize($("#varianceInputId").val(), $("#meanDeltaInputId").val(), studyDesign.allConditions.length, studyDesign.withinConditions.length), 0);				
 				//console.log("Sample Size: " + requestSampleSizeFromOpenCPU(parseFloat($("#meanDeltaInputId").val()), parseFloat( $("#varianceInputId").val())));
-								 
+				
+				
+				var effectSized = getEffectSized(parseFloat($("#meanDeltaInputId").val()), parseFloat( $("#varianceInputId").val()), sampleSize).toFixed(3); 	
+				var effectSizef = getEffectSizef(parseFloat($("#meanDeltaInputId").val()), parseFloat( $("#varianceInputId").val()), sampleSize).toFixed(3); 	
+				var effectSizepartialetasq = getPartialEtaSquared(parseFloat($("#meanDeltaInputId").val()), parseFloat( $("#varianceInputId").val()), sampleSize).toFixed(3); 				
+				
+				$("#effectSizeLabel").html("Cohen's <i>d</i> = " + effectSized + " <i>(" + interpretCohensd(effectSized) + ")</i>, Cohen's <i>f</i> = " + effectSizef + " <i>(" + interpretCohensf(effectSizef) + ")</i>, <i>&eta;<sub>p</sub><sup>2</sup></i> = " +  + effectSizepartialetasq + " <i>(" + interpretPartialEtaSquared(effectSizepartialetasq) + ")</i>"); 
+								
 				var minParticipants = 12;
 				var numParticipants = 0;
 				
@@ -544,7 +578,7 @@
 				if(studyDesign.allConditions.length > 0){
 					requestPowerFromOpenCPU(
 						parseFloat($("#meanDeltaInputId").val()),
-						parseFloat($("#varianceInputId").val()),
+						Math.pow(parseFloat($("#varianceInputId").val()),2),
 						studyDesign.allConditions.length,
 						numParticipants,
 						(studyDesign.betweenConditions.length > 0 ? studyDesign.betweenConditions.length : 1),
@@ -556,26 +590,25 @@
 					requestRegressionPowerFromOpenCPU(
 						studyDesign.IVs.length, 
 						parseFloat($("#meanDeltaInputId").val()),
-						parseFloat($("#varianceInputId").val()), 
+						Math.pow(parseFloat($("#varianceInputId").val()),2),
 						numParticipants
 					);
 				}
 				
-				console.log("numParticipants: " + numParticipants +  " Sample Size: " + sampleSize + " samples: " +studyDesign.samples + " all levels: b" + (studyDesign.betweenConditions.length) + " w" + (studyDesign.withinConditions.length) + " " + (studyDesign.withinConditions.length + studyDesign.betweenConditions.length) +" all " + studyDesign.allConditions.length+" minParticipants " + minParticipants+" power " + power + " delta: " + $("#meanDeltaInputId").val() +  " variance: " + $("#varianceInputId").val());
+				console.log("numParticipants: " + numParticipants +  " Sample Size: " + sampleSize + " samples: " +studyDesign.samples + " all levels: b" + (studyDesign.betweenConditions.length) + " w" + (studyDesign.withinConditions.length) + " " + (studyDesign.withinConditions.length + studyDesign.betweenConditions.length) +" all " + studyDesign.allConditions.length+" minParticipants " + minParticipants+" power " + power + " delta: " + $("#meanDeltaInputId").val() +  " variance: " + Math.pow(parseFloat($("#varianceInputId").val()),2));
 			}
 			  
 			if(debug) $("#btnExample2x3Within").click();
 		});  
 			 
 		function requestRegressionPowerFromOpenCPU(IVs, delta, sd, participants) {    
-			var fsquared = Math.pow(getEffectSizef(delta, sd), 2); 
+			var fsquared = Math.pow(getEffectSizef(delta, sd, participants), 2); 
 			 
 			if(!serverRegressionRequestRunning) {
 				serverRegressionRequestRunning = true;  
 				var req = ocpu.call("powerRegression",{ ivs : parseInt(IVs), participants : parseInt(participants), fsquared : fsquared, alpha : 0.05},
 				function(session){
-					session.getConsole(function(outtxt){   
-						$("#rowWAIT").hide();
+					session.getConsole(function(outtxt){    
 						console.log(outtxt);
 						showRegressionPowerAndEffectSizes(outtxt);  
 						showExperimentalDesign();
@@ -615,12 +648,12 @@
 		
 		function clearOutputAndWait() {
 			if(studyDesign.IVs.length > 0 && studyDesign.DVs.length > 0) {
-				$("#rowWAIT").show(); 
+				$("#rowWAIT").text("Please wait..."); 
 				$("#rowES").hide();
 				$("#rowST").hide(); 
 				$("#rowED").hide(); 
 			} else {
-				$("#rowWAIT").hide(); 
+				$("#rowWAIT").text("No study design possible..."); 
 				$("#rowES").hide();
 				$("#rowST").hide(); 
 				$("#rowED").hide(); 
@@ -629,6 +662,7 @@
 				$("#cellSAMPLES").hide();
 				$("#cellVARIANCE").hide();
 				$("#cellEFFECTSIZE").hide();
+				$("#cellMEANDELTA").hide();
 			}
 		}
 		
@@ -673,9 +707,7 @@
 				if(!serverANOVARequestRunning) {
 					serverANOVARequestRunning = true;   
 					var req = ocpu.call("powerANOVA",{ studyDesign : studyDesignStr, N : parseInt(participants), means : means, SD : parseFloat(sd), labels : labelArr, wcorr : 0.5, alpha : 0.05 }, function(session){
-						session.getConsole(function(outtxt){   
-							console.log(outtxt)
-							$("#rowWAIT").hide();
+						session.getConsole(function(outtxt){    
 							showANOVAPowerAndEffectSizes();  
 							showExperimentalDesign();
 							showStatisticalTest();   
@@ -731,9 +763,9 @@
 			  
 			var resultStr = '<div class="accordion">';
 			  
-			var effectSizesText = "Initial effect sizes: Cohen's <i>d</i>: " + getEffectSized(parseFloat($("#meanDeltaInputId").val()), parseFloat($("#varianceInputId").val())).toFixed(3) + " Cohen's <i>f</i>: " + getEffectSizef(parseFloat($("#meanDeltaInputId").val()),parseFloat($("#varianceInputId").val(), 0.5)).toFixed(3);
+			var effectSizesText = "Initial effect sizes: Cohen's <i>d</i>: " + getEffectSized(parseFloat($("#meanDeltaInputId").val()), parseFloat( $("#varianceInputId").val()), sampleSize).toFixed(3) + " Cohen's <i>f</i>: " + getEffectSizef(parseFloat($("#meanDeltaInputId").val()), parseFloat($("#varianceInputId").val()), sampleSize).toFixed(3);
 			
-			var text = "The statistical power (the probability that the test correctly rejects the null hypothesis) depends on the sample size (the number of participants per condition). Based on Lehr's Rule of 16, this tool also estimates the required sample size to complete your factorial design. Therefore, your statistical power can vary. The simulated power of your IVs is listed below. Typically, between-subject IVs have a lower statistical power than within-subject variables."
+			var text = "The statistical power (the probability that the test correctly rejects the null hypothesis) depends on the sample size (the number of participants per condition). Based on Lehr's Rule of 16, this tool also estimates the required sample size to complete your factorial design. Therefore, your statistical power can vary from the initial effect sizes. The simulated power of your IVs is listed below. Typically, between-subject IVs have a lower statistical power than within-subject variables."
  
 			resultStr += '<div class="accordion-item" id="accordionANOVAES"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseANOVAES" aria-controls="accordionANOVAES"><h6 class="accordion-header">' + getDataTypeIcon("H") + ' Simulated Statistical Power, Main and Interaction Effect Sizes</h6></button><div id="collapseANOVAES" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne"><div class="accordion-body bg-light" )><p>' + text + '</p><table id="powerOutputTable" class="table-striped"><thead><tr><th data-field="_row" class="th-sm"><strong >Independent Variable(s)</strong></th><th data-field="power" class="th-sm"><strong >Statistical Power in %</strong></th><th data-field="partial_eta_squared" class="th-sm"><strong >Effect Size (<i>&eta;<sub>p</sub><sup>2</sup></i>)</strong></th><th data-field="cohen_f" class="th-sm"><strong>Effect Size (Cohen\'s <i>f</i>)</strong></th></tr></thead></table><br /><p>' + effectSizesText + '</p></div></div></div>';
 			resultStr += '</div>';
@@ -777,7 +809,7 @@
 		
 		function showStatisticalTest(){
 			$("#rowST").show(); 
-			
+			$("#rowWAIT").text("");
 			var resultStr = ""; 
 			var withinIVs = getItemsInArray(studyDesign.IVs, "within", "within");
 			var betweenIVs = getItemsInArray(studyDesign.IVs, "within", "between");
@@ -811,9 +843,9 @@
 					}
 					
 					if(withinIVs.length >= 1 && betweenIVs.length >= 1) {  
-						var parametricTestStr = generateCode('Your statistical test for parametric data', 'The test provided by the <code>rstatix</code>-package automatically applies Greenhouse-Geisser correction to your within-subjects IVs violating the sphericity assumption (when Mauchly\'s test p-value is significant, p &#8804; 0.05).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID,  between = c(' + getNamesFromArray(betweenIVs, ", ", "name").slice(0, -2) + '), within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + ')</br>get_anova_table(aov, correction = "auto")');
+						var parametricTestStr = generateCode('Your statistical test for parametric data', 'The test provided by the <code>rstatix</code>-package automatically applies Greenhouse-Geisser correction to your within-subjects IVs violating the sphericity assumption (when Mauchly\'s test p-value is significant, p &#8804; 0.05).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID,  between = c(' + getNamesFromArray(betweenIVs, ", ", "name").slice(0, -2) + '), within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + '))</br>get_anova_table(aov, correction = "auto")');
 						parametricTestStr += generateCode('The post hoc test for parametric data', 'Post hoc tests of interaction effects can computed with the <code>testInteraction()</code> procedure of the <code>phia</code> package in R. Such results are difficult to interpret. With main effects only you can perform pairwise comparisons using t-tests, e.g.:','library(rstatix)<br />t_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + withinIVs[0].name + ')');
-						parametricTestStr += generateCode('Evaluate your effect size','To determine your main and interaction effect size <i>partial eta-squared</i> of a multi-factorial ANOVA you can use the following interpretation: 0.01 - 0.01 (small effect), 0.01 - 0.06 (moderate effect) and 0.06 - 0.14 (large effect).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID,  between = c(' + getNamesFromArray(betweenIVs, ", ", "name").slice(0, -2) + '), within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + ')</br>get_anova_table(aov, correction = "auto")');
+						parametricTestStr += generateCode('Evaluate your effect size','To determine your main and interaction effect size <i>partial eta-squared</i> of a multi-factorial ANOVA you can use the following interpretation: 0.01 - 0.01 (small effect), 0.01 - 0.06 (moderate effect) and 0.06 - 0.14 (large effect).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID,  between = c(' + getNamesFromArray(betweenIVs, ", ", "name").slice(0, -2) + '), within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + '))</br>get_anova_table(aov, correction = "auto")');
 						
 						var nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'The test by the <code>ARTool</code>-package performs a non-parametric ' + number2words(studyDesign.IVs.length) + '-factorial mixed-design ART-ANOVA.','library(ARTool)<br />art <- art(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + getNamesFromArray(studyDesign.IVs, " * ", "name").slice(0, -2) + ' + (1|SubjectID) )</br>anova(art)');	
 						nonparametricTestStr += generateCode('The post hoc test for non-parametric data', 'Post hoc tests of interaction effects can computed with the <code>testInteraction()</code> procedure of the <code>phia</code> package in R. Such results are difficult to interpret. With main effects only you can perform pairwise comparisons using Wilcoxon signed-rank tests, e.g.:','library(rstatix)<br />wilcox_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + withinIVs[0].name + ', paired=TRUE)');	
@@ -837,7 +869,7 @@
 							var parametricTestStr = "";
 							var nonparametricTestStr = "";
 							
-							parametricTestStr += generateCode('Your statistical test for parametric data', 'The test provided by the <code>rstatix</code>-package automatically applies Greenhouse-Geisser correction to your within-subjects IVs violating the sphericity assumption (when Mauchly\'s test p-value is significant, p &#8804; 0.05).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID, within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + ')</br>get_anova_table(aov, correction = "auto")');
+							parametricTestStr += generateCode('Your statistical test for parametric data', 'The test provided by the <code>rstatix</code>-package automatically applies Greenhouse-Geisser correction to your within-subjects IVs violating the sphericity assumption (when Mauchly\'s test p-value is significant, p &#8804; 0.05).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID, within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + '))</br>get_anova_table(aov, correction = "auto")');
 							parametricTestStr += generateCode('Your post hoc test for parametric data', 'Post hoc tests of interaction effects can computed with the <code>testInteraction()</code> procedure of the <code>phia</code> package in R. Such results are difficult to interpret. With main effects only you can perform pairwise comparisons using t-tests, e.g.:','library(rstatix)<br />t_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + withinIVs[0].name + ')');
 							parametricTestStr += generateCode('Evaluate your effect size','To determine your main and interaction effect size <i>partial eta-squared</i> of a multi-factorial ANOVA you can use the following interpretation: 0.01 - 0.01 (small effect), 0.01 - 0.06 (moderate effect) and 0.06 - 0.14 (large effect).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID, within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + '), effect.size = "pes")</br>get_anova_table(aov, correction = "auto")');
 							
@@ -895,7 +927,7 @@
 								if(studyDesign.DVs[i].type == "R" || studyDesign.DVs[i].type == "I") { 
 									resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "a " + singleOrMultiples + " linear regression", studyDesign.DVs[i].type);
 									resultStr += generateNormality('Test your data using a normal QQ plot which draws a correlation between the given data and its normal distribution. If all points for each cell fall approximately along the reference line, you can assume normality. The plot can created using the <code>ggpubr</code> package.<br />', 'library(ggpubr)<br />ggqqplot(data, "' + studyDesign.DVs[i].name + '", ggtheme = theme_bw()) + facet_grid(' + getNamesFromArray(withinIVs, " ~ ", "name").slice(0, -3).replace(/[\~\%]/g, function(match, offset, all) { return match === "~" ? (all.indexOf("~") === offset ? '~' : '+') : ''; })  + ')', true); 
-									resultStr += tabPills(i, "Do the tests indicate that your data is normal distributed (all p&#8805; 0.05)?", "yes","no", parametricTestStr, nonparametricTestStr);  
+									resultStr += tabPills(i, "Do the tests indicate that your data is normal distributed?", "yes","no", parametricTestStr, nonparametricTestStr);  
 								} else {
 									resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "a Kendall-Theil Sen Siegel nonparametric linear regression", studyDesign.DVs[i].type);
 									resultStr += nonparametricTestStr
@@ -960,7 +992,10 @@
 			str += '</tr></thead><tbody>';
 			
 			if(type == "latinSquare"){
-				for(var n = 0; n < array.length; n++) {
+				var nb_rows = array.length;
+				if (array.length % 2 != 0) nb_rows *= 2; 
+				
+				for(var n = 0; n < nb_rows; n++) {
 					str += '<tr>';
 					for(var i = 0; i < array.length; i++) {
 						if(i == 0) str += '<th scope="row"><strong>' + (n + 1) + '</strong></th>';
@@ -1084,17 +1119,72 @@
 			// https://stats.stackexchange.com/questions/11131/sample-size-formula-for-an-f-test#:~:text=Lehr's%20formula%20for%20t%2Dtests,sided%20or%20two%20sided%20test.
 		}
 		
-		function getEffectSizedz(delta, sd, corr) {   
-			return (1 - getEffectSized(delta, sd)) / Math.sqrt(2 * ( 1 - corr)); 
+		function getEffectSizedz(delta, sd, N, corr) {   
+			return (1 - getEffectSized(delta, sd, N)) / Math.sqrt(2 * ( 1 - corr)); 
 		}
 		
-		function getEffectSized(delta, sd) {   
-			return delta / (Math.sqrt((Math.pow(sd, 2) + Math.pow(sd, 2))/2)); 
-		}
-		
-		function getEffectSizef(d, k, corr) {   
-			return Math.sqrt((Math.pow(d, 2) / (2 * k))); 
+		function getEffectSized(delta, sd, N) {   
+			pooledSD = Math.sqrt(((N - 1) * sd * sd + (N - 1) * sd * sd) / (N + N - 2));
+			return delta / pooledSD;
 		} 
+		
+		function getEffectSizef(delta, sd, N) {   
+			var d = getEffectSized(delta, sd, N)
+			return d / Math.sqrt(2); 
+		} 
+		
+		function getPartialEtaSquared(delta, sd, N) { 
+			var f = getEffectSizef(delta, sd, N);
+			return f * f / (f * f + 1);
+		}
+		
+		function interpretCohensd(d) {  
+			if (d < 0.2) {
+				return 'negligible';
+			} else if (d >= 0.2 && d < 0.5) {
+				return 'small';
+			} else if (d >= 0.5 && d < 0.8) {
+				return 'medium';
+			} else {
+				return 'large';
+			}
+		} 
+		
+		function interpretCohensf(f) { 
+			if (f < 0.1) {
+				return 'negligible';
+			} else if (f >= 0.1 && f < 0.25) {
+				return 'small';
+			} else if (f >= 0.25 && f < 0.4) {
+				return 'medium';
+			} else {
+				return 'large';
+			}
+		}
+		
+		function interpretCohensPartialEtaSq(f) { 
+			if (f < 0.1) {
+				return 'negligible';
+			} else if (f >= 0.1 && f < 0.25) {
+				return 'small';
+			} else if (f >= 0.25 && f < 0.4) {
+				return 'medium';
+			} else {
+				return 'large';
+			}
+		}
+		
+		function interpretPartialEtaSquared(etaSquared) {  
+			if (etaSquared < 0.01) {
+				return 'negligble';
+			} else if (etaSquared >= 0.01 && etaSquared < 0.06) {
+				return 'small';
+			} else if (etaSquared >= 0.06 && etaSquared < 0.14) {
+				return 'medium';
+			} else {
+				return 'large';
+			}
+		}
 		
 		function roundUp(x,y) {
 			return Math.ceil(x/y)*y;
@@ -1150,7 +1240,7 @@
 		}
  
 		function example2x3Within(){  
-			resetStudyDesign(); 
+			resetStudyDesign();  
 			$('[id*=buttonDV_]').each(function(i) { $(this).click(); });
 			$('[id*=buttonIV_]').each(function(i) { $(this).click(); });
 			serverANOVARequestRunning = true; 
@@ -1180,7 +1270,7 @@
 		}
  
 		function example2x4Mixed(){  
-			 resetStudyDesign();
+			resetStudyDesign(); 
 			$('[id*=buttonDV_]').each(function(i) { $(this).click(); });
 			$('[id*=buttonIV_]').each(function(i) { $(this).click(); });
 			serverANOVARequestRunning = true;
