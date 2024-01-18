@@ -1,10 +1,10 @@
-sampleSize <- function(grps, SD, pwr, alpha) {
-  if (!requireNamespace("power", quietly = TRUE)) {
+sampleSize <- function(grps, f, alpha, pwr) {
+  if (!requireNamespace("pwr", quietly = TRUE)) {
     stop(
-      "Package \"power\" must be installed to use this function.",
+      "Package \"pwr\" must be installed to use this function.",
       call. = FALSE
     )
 
   }
-  return(power.anova.test(groups = grps, between.var = SD, within.var = SD, power = pwr,sig.level=alpha)$n)
+  return(pwr.anova.test(k = grps, f = f, sig.level = alpha, power = pwr)$n)
 }
