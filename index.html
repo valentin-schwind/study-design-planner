@@ -54,7 +54,7 @@
 				<hr />
 				<div class="row">
 					<div class="col mt-1 mb-1 "> 
-						<p>This tool is designed to plan and evaluate your study for your HCI research. Enter your independent and dependent variables for study design proposals, sample and power estimation, as well as statistical analysis for <a href="https://cran.r-project.org/" target="_blank">R</a>. This tool only offers tips and help for beginners for quick start and is not a substitute for extensive research or input of your supervisor.</p>
+						<p>This tool is designed to plan and evaluate your study for your HCI research. Enter your independent and dependent variables, estimated difference between extreme (minimum and maximal measures), and their pooled standard deviation. The tool use the statistical power estimate with <a href="https://cran.r-project.org/" target="_blank">R</a> and the <a href="https://cran.r-project.org/web/packages/Superpower/" target="_blank">Superpower</a> package. This tool only offers tips and help for beginners for quick start and is not a substitute for extensive research or input of your supervisor.</p>
 					</div>
 				</div>
 				<hr /> 
@@ -91,7 +91,7 @@
 					</div> 
 				</form>
 				
-				<div class="row mt-1 " id="cellMEANDELTA">  						
+				<div class="row mt-1 " id="cellDeltaMeans">  						
 					<div class="col-4 mt-2 "><span>Estimated mean difference between min. and max. measures (in %):</span><br /></div>
 					<div class="col-8 mt-3 " ><form name="sampleForm">
 						<input type="range" name="meanDeltaInputName" style="width: 300px" id="meanDeltaInputId" value="0.20" min="0.01" max="1" step="0.01" oninput="effectsizeOutputId.value = Math.floor((meanDeltaInputId.value * 100),0) + ' %'"> 
@@ -99,7 +99,7 @@
 						<!--<output name="effectsizeOutputLabelName" id="effectsizeOutputLabelId">medium</output>-->
 					</form></div> 
 				</div>  
-				<div class="row mt-1 " id="cellVARIANCE">  						
+				<div class="row mt-1 " id="cellVariance">  						
 					<div class="col-4 mt-2 "><span>Estimated pooled standard deviation (in % of the mean difference):</span><br /></div>
 					<div class="col-8 mt-3 " ><form name="sampleForm">
 						<input type="range" name="varianceInputName" style="width: 300px" id="varianceInputId" value="0.4" min="0" max="1" step="0.01" oninput="varianceOutputId.value = Math.floor((varianceInputId.value * 100),0) + ' %'"> 
@@ -107,20 +107,23 @@
 						<!--<output name="varianceOutputLabelName" id="varianceOutputLabelId">medium</output>-->
 					</form></div> 
 				</div> 
-				<div class="row mt-1 " id="cellEFFECTSIZE">  						
+				<div class="row mt-1 " id="cellEffectSize">  						
 					<div class="col-4 mt-2 "><span>Estimated initial effect sizes:</span></div>
 					<div class="col-8 mt-2 " id="effectSizeLabel"></div> 
 				</div> 
-				<div class="row" id="cellEQUIVALENCE">  						
-					<div class="col-4"><span></span><br /></div>
-					<div class="col-8 ms-0" ><input type="checkbox" class="form-check-input me-2" name="equivalenceCheckBox" id="equivalenceCheckBox"><label class="form-check-label" for="equivalenceCheckBox">test for equivalence (noninferiority)</label></div>
+				<div class="row mt-1 " id="cellSampleSize">  						
+					<div class="col-4 mt-2 "><span>Subjects (estimated using <a target="_blank" href='https://cran.r-project.org/web/packages/Superpower/vignettes/intro_to_superpower.html'>Superpower)</a>:</span><br /></div>
+					<div class="col-8 mt-2 "  id="sampleSizePleaseWait">Please wait...</div>
+					<div class="col-8 mt-3 "  id="sampleSizeSlider"> 
+						<form name="sampleForm"> 
+							<input type="range" name="samplesInputName" style="width: 300px" id="samplesInputId" value="0" min="0" max="200" oninput="samplesOutputId.value = samplesInputId.value">
+							<output name="samplesOutputName" id="samplesOutputId">0</output>
+						</form>
+					</div> 
 				</div> 
-				<div class="row mt-1 " id="cellSAMPLES">  						
-					<div class="col-4 mt-2 "><span>Subjects (N estimated by <a target="_blank" href='https://onlinelibrary.wiley.com/doi/10.1002/sim.4780110811'>Lehr's "Rule of 16")</a>:</span><br /></div>
-					<div class="col-8 mt-3 " ><form name="sampleForm">
-						<input type="range" name="samplesInputName" style="width: 300px" id="samplesInputId" value="24" min="0" max="200" oninput="samplesOutputId.value = samplesInputId.value">
-						<output name="samplesOutputName" id="samplesOutputId">24</output>
-					</form></div> 
+				<div class="row" id="cellEquivalence">  						
+					<div class="col-4"><span></span><br /></div>
+					<div class="col-8 ms-0" ><input type="checkbox" class="form-check-input me-2" name="equivalenceCheckBox" id="equivalenceCheckBox"><label class="form-check-label" for="equivalenceCheckBox">Include test for equivalence (non-inferiority)</label></div>
 				</div> 
 				<div class="row" id="cellMANOVA">  
 					<div class="col-4"><span></span><br /></div>
@@ -166,17 +169,17 @@
 	</div>
  
 	<script>
-		var debug = false; // Flag for enabling debug mode
-		var IVs = 0; // Counter for Independent Variables (IVs)
-		var DVs = 0; // Counter for Dependent Variables (DVs)
-		var manualEffectSizeUpdate = false; // Flag for manual effect size update
-		var manualSubjectUpdate = false; // Flag for manual subject update
-		var serverANOVARequestRunning = false; // Flag for ANOVA request status
-		var serverRegressionRequestRunning = false; // Flag for regression request status
-		var serverSAMPLERequestRunning = false; // Flag for SAMPLE request status
-		var studyDesign; // Object to hold study design details
-		var sampleSize; // Variable to store sample size
-		var runningLocal = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === ""); // Check if running locally
+		let debug = false; // Flag for enabling debug mode
+		let IVs = 0; // Counter for Independent Variables (IVs)
+		let DVs = 0; // Counter for Dependent Variables (DVs) 
+		let manualSampleSizeUpdate = false; // Flag for manual subject update
+		let serverANOVARequestRunning = false; // Flag for ANOVA request status
+		let serverRegressionRequestRunning = false; // Flag for regression request status
+		let serverRequestRunning = false; // Flag for SAMPLE request status
+		let studyDesign; // Object to hold study design details
+		let sampleSize; // Variable to store sample size
+		const simulations = 100;
+		let runningLocal = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === ""); // Check if running locally
 
 		// Set server URL based on running mode (Local or Online)
 		if(!runningLocal) {
@@ -214,11 +217,13 @@
 			$("#rowWAIT").text("");
 			
 			$("#cellMANOVA").hide();
-			$("#cellEQUIVALENCE").hide();
-			$("#cellSAMPLES").hide();
-			$("#cellVARIANCE").hide();
-			$("#cellEFFECTSIZE").hide();
-			$("#cellMEANDELTA").hide();
+			$("#cellEquivalence").hide();
+			$("#cellSampleSize").hide();
+			$("#cellVariance").hide();
+			$("#cellEffectSize").hide();
+			$("#cellDeltaMeans").hide();
+			
+			$("#sampleSizeSlider").hide(); 
 			
 			$("input[name='nameDV']").attr('placeholder', "Enter DV name...");
 			$("input[name='enterLevelsIV']").attr('placeholder', "Enter levels (comma-separated)");
@@ -228,10 +233,7 @@
             $("select[name='selectIVType']").append(new Option('Nominal (types, categories, gender, animals, ZIP codes,...)', "N")); 
             $("select[name='selectIVType']").append(new Option('Ordinal (marks, ranks, single Likert items, counts, ...)', "O")); 
             $("select[name='selectIVType']").append(new Option('Interval (arbitrary zero: distance, time, IQ, temperature in C, ...)', "I")); 
-            $("select[name='selectIVType']").append(new Option('Ratio (fixed zero: age, volume, temperature in K, scores, bandwidth,...)', "R")); 
-			//$("select[name='selectIVType'] option[value='O']").attr("disabled","disabled");
-			//$("select[name='selectIVType'] option[value='I']").attr("disabled","disabled");
-			//$("select[name='selectIVType'] option[value='R']").attr("disabled","disabled");
+            $("select[name='selectIVType']").append(new Option('Ratio (fixed zero: age, volume, temperature in K, scores, bandwidth,...)', "R"));  
 			
 			$("select[name='selectDVType']").append(new Option('Please select', ""));
             $("select[name='selectDVType']").append(new Option('Nominal (types, categories, gender, animals, ZIP codes,...)', "N")); 
@@ -261,30 +263,38 @@
 			});	
 			
 			$("input[name='manovaCheckBox']").change(function() { 
-				displaySTrow();
+				displayStatisticsOutput();
 			});
 			
 			$("input[name='normalityCheckBox']").change(function() { 
-				displaySTrow();
+				displayStatisticsOutput();
 			}); 
 			
 			$("#samplesInputId").change(function() { 
-				manualSubjectUpdate = true;
-				displaySTrow();
-				manualSubjectUpdate = false;
+				manualSampleSizeUpdate = true; 
+				manualUpdate();
+				manualSampleSizeUpdate = false;
 			});
 			
 			$("#varianceInputId").change(function() { 
-				manualEffectSizeUpdate = true; 
-				displaySTrow();
-				manualEffectSizeUpdate = false;
+				manualUpdate();
 			});
 			
-			$("#meanDeltaInputId").change(function() { 
-				manualEffectSizeUpdate = true; 
-				displaySTrow();
-				manualEffectSizeUpdate = false;
+			/* Not implemented yet */
+			/*
+			$("#equivalenceCheckBox").change(function() { 
+				manualUpdate();  
 			});
+			*/
+
+			$("#meanDeltaInputId").change(function() { 
+				manualUpdate(); 
+			});
+
+			function manualUpdate() {
+				clearOutputAndWait();
+				displayStatisticsOutput();
+			}
 			
 			$("#addIV").click(function() { 
 				IVs++;
@@ -300,10 +310,10 @@
 					$("select[name='selectIVwithin'] option:eq(1)").prop("selected", true);
 				}
 				
-				var iconIVstr = "";
-				var levelsIVstr = ""; 
-				var levels = [ ];
-				var IV = {
+				let iconIVstr = "";
+				let levelsIVstr = ""; 
+				let levels = [ ];
+				let IV = {
 					"id": 0,
 					"name": "",
 					"type": "",
@@ -334,16 +344,15 @@
 				$("#listIV").append('<button type="button" id="buttonIV_' + IVs + '" class="btn btn-light me-1 mt-1"  style="vertical-align: top;">' + iconIVstr + $("input[name='nameIV']").val() + ' (' + $("select[name='selectIVwithin']").val() + ') <i class="bi ms-1 bi-x"" c></i>' + levelsIVstr + '</button>');
 				
 				$("#buttonIV_" + IVs).click(function(){  						
-					var removeItem;
-					var myNumber = this.id.split('_')[1];
+					let removeItem;
+					let myNumber = this.id.split('_')[1];
 					$.each(studyDesign.IVs, function(i){
 						if(studyDesign.IVs[i].id == myNumber) removeItem = i; 
 					});
 					studyDesign.IVs.splice(removeItem, 1); 
 					$(this).remove();   
 					clearOutputAndWait();
-					displayDVrow(); 
-					displaySTrow(); 
+					displayDependentVariableInput();  
 					$("#addIV").removeClass('disabled'); 
 				});
 								
@@ -363,14 +372,13 @@
 				$("#withinIV").hide();	
 
 				clearOutputAndWait();
-				displayDVrow();		
-				displaySTrow();	
+				displayDependentVariableInput();	
  
 				if(studyDesign.IVs.length > 2)  $("#addIV").addClass('disabled'); 
 				else $("#addIV").removeClass('disabled');					
 			});
 			
-			function displayDVrow(){  	
+			function displayDependentVariableInput(){  	
 				if(studyDesign.IVs.length > 0){
 					$("input[name='nameIV']").prop("required", false); 
 					$("select[name='selectIVType']").prop("required", false); 
@@ -388,25 +396,31 @@
 					$("select[name='selectDVType']").prop("required", false); 
 					$("#rowES").hide();
 					$("#rowDV").hide();
-					$("#cellSAMPLES").hide();
-					$("#cellVARIANCE").hide();
-					$("#cellEFFECTSIZE").hide();
-					$("#cellMEANDELTA").hide();
+					$("#cellSampleSize").hide();
+					$("#cellVariance").hide();
+					$("#cellEffectSize").hide();
+					$("#cellDeltaMeans").hide();
 					$("#cellMANOVA").hide();
+					$("#rowWAIT").text("No study design possible..."); 
+					return;
 				}	 	 
 				
-				if(studyDesign.DVs.length > 0 && studyDesign.IVs.length > 0){ 
-					$("#cellSAMPLES").show();
-					$("#cellVARIANCE").show();
-					$("#cellEFFECTSIZE").show();
-					$("#cellMEANDELTA").show();
+				if(studyDesign.DVs.length > 0 && studyDesign.IVs.length > 0){  
+					$("#cellVariance").show();
+					$("#cellEffectSize").show();
+					$("#cellDeltaMeans").show();
+					$("#cellSampleSize").show();
 				} else {
-					$("#cellSAMPLES").hide();
-					$("#cellVARIANCE").hide();
-					$("#cellEFFECTSIZE").hide();
-					$("#cellMEANDELTA").hide();
-					$("#cellMANOVA").hide();
+					$("#cellSampleSize").hide();
+					$("#cellVariance").hide();
+					$("#cellEffectSize").hide();
+					$("#cellDeltaMeans").hide();
+					$("#cellMANOVA").hide(); 
+					$("#rowWAIT").text("No study design possible..."); 
+					return;
 				}
+					
+				displayStatisticsOutput();	
 			}
 			
 			$("#addDV").click(function() {
@@ -416,8 +430,8 @@
 				if($("input[name='nameDV']").val() == "") return;
 				if($("select[name='selectDVType']").val() == "") return;
 			
-				var iconDVstr = "";
-				var DV = {
+				let iconDVstr = "";
+				let DV = {
 					"id": 0,
 					"name": "",
 					"type": "" };
@@ -427,8 +441,8 @@
 				$("#listDV").append('<button type="button" id="buttonDV_' + DVs + '" class="btn btn-light me-1 mt-1 ">' + iconDVstr + $("input[name='nameDV']").val() + '<i class="bi ms-1 bi-x "></i></button>');
 				
 				$("#buttonDV_" + DVs).click(function(){ 
-					var removeItem;
-					var myNumber = this.id.split('_')[1];
+					let removeItem;
+					let myNumber = this.id.split('_')[1];
 					
 					$.each(studyDesign.DVs, function(i){
 						if(studyDesign.DVs[i].id == myNumber) removeItem = i; 
@@ -437,8 +451,7 @@
 					studyDesign.DVs.splice(removeItem, 1); 
 					$(this).remove();  
 					clearOutputAndWait();
-					displayDVrow(); 
-					displaySTrow();
+					displayDependentVariableInput();  
 					$("#addDV").removeClass('disabled');  
 				});
 				
@@ -449,21 +462,20 @@
 				
 				$("input[name='nameDV']").val("");
 				$("select[name='selectDVType'] option:eq(0)").prop("selected", true); 
-				displaySTrow();
+				displayStatisticsOutput();
 				
 				if(studyDesign.DVs.length > 3) {
 					$("#addDV").addClass('disabled'); 
 				} else {
 					$("#addDV").removeClass('disabled');
 				}	 
-				$("#rowWAIT").text("Please wait...");
-				$("#cellSAMPLES").show();
-				$("#cellVARIANCE").show();
-				$("#cellMEANDELTA").show();
-				$("#cellEFFECTSIZE").show();
+				$("#rowWAIT").text("Please wait..."); 
+				$("#cellVariance").show();
+				$("#cellDeltaMeans").show();
+				$("#cellEffectSize").show();
 			}); 
 			 
-			function displaySTrow(){ 
+			function displayStatisticsOutput(){ 
 				if(studyDesign.DVs.length > 0){ 
 					$("input[name='nameDV']").prop("required", false); 
 					$("select[name='selectDVType']").prop("required", false); 						
@@ -471,28 +483,31 @@
 					$("input[name='nameDV']").prop("required", true); 
 					$("select[name='selectDVType']").prop("required", true);  
 				}
-				 
-				if(studyDesign.DVs.length > 1 && studyDesign.IVs.length > 0 ){
-					$("#cellMANOVA").show();
-				} else {
-					$("#cellMANOVA").hide();
-					$("input[name='manovaCheckBox']").prop( 'checked', false );
-				}
-				
+				  
 				if(studyDesign.DVs.length > 0 && studyDesign.IVs.length > 0) startStudyPlanner();	 
 			}
 				
 			function startStudyPlanner() {  
-				var anIVHasMoreThanTwoLevels = false;
-				
+				let anIVHasMoreThanTwoLevels = false;
+
+				$("#cellSampleSize").show(); 
+
+				if(manualSampleSizeUpdate) {
+					$("#sampleSizeSlider").show(); 
+					$("#sampleSizePleaseWait").hide(); 
+				} else {
+					$("#sampleSizeSlider").hide();  
+					$("#sampleSizePleaseWait").show(); 
+				}
+
 				$.each(studyDesign.IVs, function(i){  
 					if(studyDesign.IVs[i].levels.length > 2) anIVHasMoreThanTwoLevels = true; 
 				});
 				
-				if(studyDesign.IVs.length == 1 && studyDesign.DVs.length >= 1 && anIVHasMoreThanTwoLevels == false) $("#cellEQUIVALENCE").show();
-				else $("#cellEQUIVALENCE").hide(); 
+				if(studyDesign.IVs.length == 1 && studyDesign.DVs.length >= 1 && anIVHasMoreThanTwoLevels == false) $("#cellEquivalence").show();
+				else $("#cellEquivalence").hide(); 
 				
-				var studyHasParametricData = false;
+				let studyHasParametricData = false;
 				$.each(studyDesign.DVs, function(i){  
 					if(studyDesign.DVs[i].type == "I" || studyDesign.DVs[i].type == "R")  studyHasParametricData = true; 
 				}); 
@@ -500,27 +515,27 @@
 				studyDesign.MANOVA = $("input[name='manovaCheckBox']").prop('checked');
 				 
 				if(studyDesign.DVs.length > 0 && studyDesign.IVs.length > 0) {
-					var IVType = $("select[name='selectIVType']").val(); 
+					let IVType = $("select[name='selectIVType']").val(); 
 				} 
 				
 				studyDesign.withinIVs = getItemsInArray(getItemsInArray(studyDesign.IVs, "type", "N"), "within", "within"); 
 				studyDesign.betweenIVs = getItemsInArray(getItemsInArray(studyDesign.IVs, "type", "N"), "within", "between"); 
 				
 				studyDesign.nonOrdinalIVs = [];
-				var ordinalIVs = getItemsInArray(getItemsInArray(studyDesign.IVs, "type", "O"), "within", "within"); 
-				var intervalIVs = getItemsInArray(getItemsInArray(studyDesign.IVs, "type", "I"), "within", "within"); 
-				var ratioIVs = getItemsInArray(getItemsInArray(studyDesign.IVs, "type", "R"), "within", "within"); 
+				let ordinalIVs = getItemsInArray(getItemsInArray(studyDesign.IVs, "type", "O"), "within", "within"); 
+				let intervalIVs = getItemsInArray(getItemsInArray(studyDesign.IVs, "type", "I"), "within", "within"); 
+				let ratioIVs = getItemsInArray(getItemsInArray(studyDesign.IVs, "type", "R"), "within", "within"); 
 				studyDesign.nonOrdinalIVs = ordinalIVs.concat(intervalIVs).concat(ratioIVs);
 				console.log(studyDesign.nonOrdinalIVs);
 				
-				var allBetweens = [];  
+				let allBetweens = [];  
 				$.each(studyDesign.betweenIVs, function(i){  
 					$.each(studyDesign.betweenIVs[i].levels, function(j){   
 						allBetweens.push(studyDesign.betweenIVs[i].levels);
 					});
 				});  
 				
-				var allWithins = []; 
+				let allWithins = []; 
 					$.each(studyDesign.withinIVs, function(i){ 
 						if(studyDesign.withinIVs[i].levels.length > 1)
 							allWithins.push(studyDesign.withinIVs[i].levels);
@@ -543,79 +558,143 @@
 					studyDesign.allConditions[i] = studyDesign.allConditions[i].slice(0, -1);
 				});
 				
-				console.log(studyDesign); 
+				console.log("Study design str: " + buildStudyDesignString()); 
 				
-				sampleSize = requestSampleSizeFromOpenCPU(parseFloat($("#meanDeltaInputId").val()), Math.pow(parseFloat( $("#varianceInputId").val()),2)); //Math.floor(getSampleSize($("#varianceInputId").val(), $("#meanDeltaInputId").val(), studyDesign.allConditions.length, studyDesign.withinConditions.length), 0);				
-				//console.log("Sample Size: " + requestSampleSizeFromOpenCPU(parseFloat($("#meanDeltaInputId").val()), parseFloat( $("#varianceInputId").val())));
-				
-				
-				var effectSized = getEffectSized(parseFloat($("#meanDeltaInputId").val()), parseFloat( $("#varianceInputId").val()), sampleSize).toFixed(3); 	
-				var effectSizef = getEffectSizef(parseFloat($("#meanDeltaInputId").val()), parseFloat( $("#varianceInputId").val()), sampleSize).toFixed(3); 	
-				var effectSizepartialetasq = getPartialEtaSquared(parseFloat($("#meanDeltaInputId").val()), parseFloat( $("#varianceInputId").val()), sampleSize).toFixed(3); 				
-				
-				$("#effectSizeLabel").html("Cohen's <i>d</i> = " + effectSized + " <i>(" + interpretCohensd(effectSized) + ")</i>, Cohen's <i>f</i> = " + effectSizef + " <i>(" + interpretCohensf(effectSizef) + ")</i>, <i>&eta;<sub>p</sub><sup>2</sup></i> = " +  + effectSizepartialetasq + " <i>(" + interpretPartialEtaSquared(effectSizepartialetasq) + ")</i>"); 
-								
-				var minParticipants = 12;
-				var numParticipants = 0;
-				
-				if(studyDesign.withinConditions.length > 0 && studyDesign.withinConditions.length <= 3) minParticipants = permutations(studyDesign.withinConditions).length * 2;
-				if(studyDesign.withinConditions.length > 3 && studyDesign.withinConditions.length <= 12) minParticipants = studyDesign.withinConditions.length; 
-				if(studyDesign.withinConditions.length > 3 && studyDesign.withinConditions.length <= 12) minParticipants = studyDesign.withinConditions.length;
-				
-				minParticipants = minParticipants * (studyDesign.betweenConditions.length > 0 ? studyDesign.betweenConditions.length : 1) * 2; 
-				
-				if(manualSubjectUpdate) numParticipants = $("#samplesInputId").val();
-				else numParticipants = roundUp(sampleSize, minParticipants);
-				
-				if(numParticipants < studyDesign.allConditions.length) numParticipants = studyDesign.allConditions.length; 
-				
-				var steps = studyDesign.allConditions.length;
-				studyDesign.samples = setSlider('#samplesInputId','#samplesOutputId', numParticipants, 0, 1000, steps);  
-	 
-				$("#samplesOutputId").text($("#samplesInputId").val()); 
-				$("#power").html(""); 
-				
-				if(studyDesign.allConditions.length > 0){
-					requestPowerFromOpenCPU(
-						parseFloat($("#meanDeltaInputId").val()),
-						Math.pow(parseFloat($("#varianceInputId").val()),2),
-						studyDesign.allConditions.length,
-						numParticipants,
-						(studyDesign.betweenConditions.length > 0 ? studyDesign.betweenConditions.length : 1),
-						(studyDesign.withinConditions.length > 0 ? studyDesign.withinConditions.length : 1)
-					);
-				}
-				
-				if(studyDesign.nonOrdinalIVs.length > 0){ 
-					requestRegressionPowerFromOpenCPU(
-						studyDesign.IVs.length, 
-						parseFloat($("#meanDeltaInputId").val()),
-						Math.pow(parseFloat($("#varianceInputId").val()),2),
-						numParticipants
-					);
-				}
-				
-				console.log("numParticipants: " + numParticipants +  " Sample Size: " + sampleSize + " samples: " +studyDesign.samples + " all levels: b" + (studyDesign.betweenConditions.length) + " w" + (studyDesign.withinConditions.length) + " " + (studyDesign.withinConditions.length + studyDesign.betweenConditions.length) +" all " + studyDesign.allConditions.length+" minParticipants " + minParticipants+" power " + power + " delta: " + $("#meanDeltaInputId").val() +  " variance: " + Math.pow(parseFloat($("#varianceInputId").val()),2));
+				setEffectSizes();
+				sampleSize = requestInitialSampleSizeFromOpenCPU();  
 			}
 			  
 			if(debug) $("#btnExample2x3Within").click();
 		});  
-			 
+		
+		function setEffectSizes() {
+			let meanDelta = parseFloat($("#meanDeltaInputId").val());			    
+			let pooledSD = $("#varianceInputId").val();			 	    
+			
+			console.log("Set Effect Sizes: sample size: " + sampleSize + " Variance: " + pooledSD + " Delta: " + meanDelta); 
+							
+			let cohensD = getCohensD(meanDelta, pooledSD).toFixed(3); 	 
+			let cohensF = getCohensF(meanDelta, pooledSD).toFixed(3); 	 
+			let partialEtaSq = getPartialEtaSquared(meanDelta, pooledSD).toFixed(3); 		 
+			
+			$("#effectSizeLabel").html("Cohen's <i>d</i> = " + cohensD + " <i>(" + interpretCohensd(cohensD) + ")</i>, Cohen's <i>f</i> = " + cohensF + " <i>(" + interpretCohensf(cohensF) + ")</i>, <i>&eta;<sub>p</sub><sup>2</sup></i> = " +  + partialEtaSq + " <i>(" + interpretPartialEtaSquared(partialEtaSq) + ")</i>"); 
+		}
+		
+		function setPowerAnalysesAndEffectSizes() {
+			$("#power").html(""); 
+
+			serverRequestRunning = true;   
+
+			let minParticipants = 12;
+			let numParticipants = 0;
+			/*
+			// With 3 conditions we take permutations
+			if(studyDesign.withinConditions.length > 0 && studyDesign.withinConditions.length <= 3) minParticipants = permutations(studyDesign.withinConditions).length * 2;
+
+			// With more, we take latin squares
+			if(studyDesign.withinConditions.length > 3 && studyDesign.withinConditions.length <= 12) minParticipants = studyDesign.withinConditions.length;  
+			
+			minParticipants = minParticipants * (studyDesign.betweenConditions.length > 0 ? studyDesign.betweenConditions.length : 1) * 2; 
+			
+			if(manualSampleSizeUpdate) numParticipants = $("#samplesInputId").val();
+			else numParticipants = roundUp(sampleSize, minParticipants);
+			
+			if(numParticipants < studyDesign.allConditions.length) numParticipants = studyDesign.allConditions.length; 
+			*/
+			let steps = studyDesign.allConditions.length; 
+			studyDesign.samples = setSlider('#samplesInputId','#samplesOutputId', sampleSize, 0, 200, steps);  
+
+			$("#samplesOutputId").text($("#samplesInputId").val());
+
+			if(studyDesign.allConditions.length > 0){
+				requestPowerFromOpenCPU(
+					parseFloat($("#meanDeltaInputId").val()),
+					Math.pow(parseFloat($("#varianceInputId").val()),2),
+					studyDesign.allConditions.length,
+					sampleSize,
+					(studyDesign.betweenConditions.length > 0 ? studyDesign.betweenConditions.length : 1),
+					(studyDesign.withinConditions.length > 0 ? studyDesign.withinConditions.length : 1)
+				);
+			}
+
+			if(studyDesign.nonOrdinalIVs.length > 0){ 
+				requestRegressionPowerFromOpenCPU(
+					studyDesign.IVs.length, 
+					parseFloat($("#meanDeltaInputId").val()),
+					Math.pow(parseFloat($("#varianceInputId").val()),2),
+					sampleSize
+				);
+			}
+
+			serverRequestRunning = false;  
+			
+			console.log(" Sample Size: " + sampleSize + " samples: " +studyDesign.samples + " all levels: b" + (studyDesign.betweenConditions.length) + " w" + (studyDesign.withinConditions.length) + " " + (studyDesign.withinConditions.length + studyDesign.betweenConditions.length) +" all " + studyDesign.allConditions.length+" minParticipants " + minParticipants+" power " + power + " delta: " + $("#meanDeltaInputId").val() +  " variance: " + Math.pow(parseFloat($("#varianceInputId").val()),2));			
+		}
+			
+
+		function requestInitialSampleSizeFromOpenCPU() { 
+
+			let delta = parseFloat($("#meanDeltaInputId").val());
+			let SD = parseFloat($("#varianceInputId").val());
+			let design = buildStudyDesignString();
+
+			if(!serverRequestRunning) { 
+				if(!manualSampleSizeUpdate) { 
+					serverRequestRunning = true; 
+
+					let groups = studyDesign.allCombinations.length > 12 ? 12 : studyDesign.allCombinations.length;
+					if(groups == 0) groups = 2; 
+					
+					let req = ocpu.call("estimateInitialSampleSize",{ study_design: design, delta: delta, sd: SD, covar: 0.75, power: 0.80, alpha: 0.05, nsims: simulations, seed: 1234 }, 
+						function(session){ 
+							session.getConsole(function(outtxt){     
+								sampleSize = extractSampleSizeFromOutput(outtxt);
+								let steps = studyDesign.allConditions.length;
+								studyDesign.samples = setSlider('#samplesInputId','#samplesOutputId', sampleSize, 0, 200, steps);  
+								 
+								$("#sampleSizePleaseWait").hide(); 
+								$("#sampleSizeSlider").show(); 
+
+								if(studyDesign.DVs.length > 1 && studyDesign.IVs.length > 0 ){
+									$("#cellMANOVA").show();
+								} else {
+									$("#cellMANOVA").hide();
+									$("input[name='manovaCheckBox']").prop( 'checked', false );
+								}
+								
+								
+								setPowerAnalysesAndEffectSizes();	 	
+							});
+							//if R returns an error, alert the error message
+							req.fail(function(){
+								console.log("Server error: " + req.responseText);
+							});   
+						}
+					); 
+				} else { 
+					sampleSize = $("#samplesInputId").val();  
+					setPowerAnalysesAndEffectSizes();	 
+				}
+			}
+			return sampleSize;
+			
+		}
+		
 		function requestRegressionPowerFromOpenCPU(IVs, delta, sd, participants) {    
-			var fsquared = Math.pow(getEffectSizef(delta, sd, participants), 2); 
+			let fsquared = Math.pow(getEffectSizef(delta, sd, participants), 2); 
 			 
 			if(!serverRegressionRequestRunning) {
 				serverRegressionRequestRunning = true;  
-				var req = ocpu.call("powerRegression",{ ivs : parseInt(IVs), participants : parseInt(participants), fsquared : fsquared, alpha : 0.05},
+				let req = ocpu.call("powerRegression",{ ivs : parseInt(IVs), participants : parseInt(participants), fsquared : fsquared, alpha : 0.05},
 				function(session){
 					session.getConsole(function(outtxt){    
 						console.log(outtxt);
 						showRegressionPowerAndEffectSizes(outtxt);  
 						showExperimentalDesign();
 						showStatisticalTest();     
-						serverRegressionRequestRunning = false;
+						serverRegressionRequestRunning = false;			
+				
 					});
-					//if R returns an error, alert the error message
 					req.fail(function(){
 						console.log("Server error: " + req.responseText);
 					});   
@@ -623,58 +702,79 @@
 			} 
 		}  
 		
-		function requestSampleSizeFromOpenCPU(delta, SDs) {
-			var sampleSize = 24;
-			 /*
-			if(!serverSAMPLERequestRunning) {
-				serverSAMPLERequestRunning = true;  
-				var effectSize = getEffectSizef(delta, SDs, 0.5); 
-				var groups = studyDesign.allCombinations.length > 18 ? 18 : studyDesign.allCombinations.length;
-				if(groups == 0) groups = 2;
-				
-				console.log("groups: "  + groups);
-				var req = ocpu.rpc("sampleSize",{ grps : parseInt(groups), SD : parseFloat(SDs), pwr : 0.8, alpha : 0.05 }, function(outtxt){
-					console.log("Sample form Server: "  + outtxt)
-					sampleSize = parseFloat(outtxt);
-					serverSAMPLERequestRunning = false;    
-				});
-				//if R returns an error, alert the error message
-				req.fail(function(){
-					console.log("Server error: " + req.responseText); 
-				});  
-			} */
-			return sampleSize;
+		function estimateSampleSizeByLehrsRule(effectSize, numberOfConditions) {  
+			return rawSampleSize = 16 / (effectSize * effectSize);
 		}
 		
+		function adjustedSampleSize(rawSampleSize, numberOfConditions) { 
+			const roundedSampleSize = Math.ceil(rawSampleSize); 
+			return Math.ceil(roundedSampleSize / numberOfConditions) * numberOfConditions;
+		}
+
+		function extractSampleSizeFromOutput(str) {
+			
+			// Regular expression to find the number within the last square brackets
+			let regex = /\[(\d+)\](?=[^\[]*$)/;
+
+			// Extract the number
+			let match = str.match(regex);
+			let extractedNumber = match ? parseFloat(match[1]) : null;
+
+			return extractedNumber;
+		} 
+
 		function clearOutputAndWait() {
 			if(studyDesign.IVs.length > 0 && studyDesign.DVs.length > 0) {
 				$("#rowWAIT").text("Please wait..."); 
 				$("#rowES").hide();
 				$("#rowST").hide(); 
 				$("#rowED").hide(); 
+				$("#cellMANOVA").hide();
+				if($("#sampleSizeSlider").is(":hidden")) $("#sampleSizePleaseWait").show();
+				else  $("#sampleSizePleaseWait").hide();
+				$("#cellSampleSize").show(); 
 			} else {
 				$("#rowWAIT").text("No study design possible..."); 
 				$("#rowES").hide();
 				$("#rowST").hide(); 
 				$("#rowED").hide(); 
 				$("#cellMANOVA").hide();
-				$("#cellEQUIVALENCE").hide();
-				$("#cellSAMPLES").hide();
-				$("#cellVARIANCE").hide();
-				$("#cellEFFECTSIZE").hide();
-				$("#cellMEANDELTA").hide();
+				$("#cellEquivalence").hide();
+				$("#cellSampleSize").hide();
+				$("#cellVariance").hide(); 
+				$("#cellDeltaMeans").hide();
 			}
 		}
 		
+		function buildStudyDesignString() {
+			let studyDesignStr = ""; 
+
+			$.each(studyDesign.betweenIVs, function(i){  
+				studyDesignStr += studyDesign.betweenIVs[i].levels.length + "b*";
+			}); 
+			
+			if(studyDesign.withinIVs.length == 0) studyDesignStr = studyDesignStr.slice(0, -1);
+			
+			$.each(studyDesign.withinIVs, function(i){  
+				studyDesignStr += studyDesign.withinIVs[i].levels.length + "w*";
+			}); 
+
+			$.each(studyDesign.nonOrdinalIVs, function(i){  
+				studyDesignStr += "2w*";
+			}); 
+			
+			if(studyDesign.withinIVs.length > 0 || studyDesign.nonOrdinalIVs.length > 0) studyDesignStr = studyDesignStr.slice(0, -1); 
+
+			return studyDesignStr;
+		}
 			 
 		function requestPowerFromOpenCPU(delta, sd, conditions, participants, betweens, withins) {   
-			var means = []; // if delta = 0.5: 0, 0, 0.5, 0.5, 0.0, 0.0
-			var labelArr = []; //["time", "morning", "afternoon" , "prototype", "prototypeA", "prototypeB", "prototypeC"];  
-			var studyDesignStr = ""; 
-			
+			let means = [];
+			let labelArr = [];
+			let studyDesignStr = buildStudyDesignString(); 
+
 			$.each(studyDesign.betweenIVs, function(i){ 
-				labelArr.push(studyDesign.betweenIVs[i].name);
-				studyDesignStr += studyDesign.betweenIVs[i].levels.length + "b*"
+				labelArr.push(studyDesign.betweenIVs[i].name); 
 				$.each(studyDesign.betweenIVs[i].levels, function(j){ 
 					labelArr.push(studyDesign.betweenIVs[i].levels[j]);   
 				});
@@ -683,18 +783,15 @@
 			if(studyDesign.withinIVs.length == 0) studyDesignStr = studyDesignStr.slice(0, -1);
 			
 			$.each(studyDesign.withinIVs, function(i){ 
-				labelArr.push(studyDesign.withinIVs[i].name); 
-				studyDesignStr += studyDesign.withinIVs[i].levels.length + "w*"
+				labelArr.push(studyDesign.withinIVs[i].name);  
 				$.each(studyDesign.withinIVs[i].levels, function(j){ 
 					labelArr.push(studyDesign.withinIVs[i].levels[j]);   
 				});
 			}); 
-			
-			if(studyDesign.withinIVs.length > 0) studyDesignStr = studyDesignStr.slice(0, -1); 
-			
+			 
 			$.each(studyDesign.allCombinations, function(i){  
 				Math.seedrandom(i);
-				var j = Math.random() * delta;
+				let j = Math.random() * delta;
 				if(i == 0) j = 0;
 				if(i == studyDesign.allCombinations.length - 1) j = delta;
 				means.push(j);
@@ -706,11 +803,13 @@
 			} else {
 				if(!serverANOVARequestRunning) {
 					serverANOVARequestRunning = true;   
-					var req = ocpu.call("powerANOVA",{ studyDesign : studyDesignStr, N : parseInt(participants), means : means, SD : parseFloat(sd), labels : labelArr, wcorr : 0.5, alpha : 0.05 }, function(session){
+					let req = ocpu.call("powerANOVA",{ studyDesign : studyDesignStr, N : parseInt(participants), means : means, SD : parseFloat(sd), labels : labelArr, wcorr : 0.5, alpha : 0.05 }, function(session){
 						session.getConsole(function(outtxt){    
 							showANOVAPowerAndEffectSizes();  
 							showExperimentalDesign();
 							showStatisticalTest();   
+							
+							$("#cellSampleSize").show();
 							$('#powerOutputTable').bootstrapTable({ data: JSON.parse( outtxt.split('\n')[2]) }); 
 							$('#powerOutputTable').html($('#powerOutputTable').html().replaceAll(":", " &times; ")); 
 							serverANOVARequestRunning = false;
@@ -726,15 +825,15 @@
 		
 		function showRegressionPowerAndEffectSizes(outtxt){
 			var text = outtxt.split("Multiple regression power calculation")[1];
-			var text = text.split("\n");
-			var tableBody = "";
+			text = text.split("\n");
+			let tableBody = "";
 			$(text).each(function(i){
 				if(i > 1) var item = text[i].replaceAll(" ","").split("="); 
 				if(item){
 					if (item[0] == "u") item[0] = "Number of regression coefficients (predictors)";
 					if (item[0] == "v") item[0] = "Degrees of freedom (<i>df</i>)";
 					if (item[0] == "f2"){
-						item[0] = "Effect size (<i>f²</i>)";
+						item[0] = "Effect size (<i>fï¿½</i>)";
 						item[1] = parseFloat(item[1]).toFixed(3);
 					}
 					if (item[0] == "sig.level") item[0] = "Significance level";
@@ -747,11 +846,13 @@
 			});
 			$("#rowES").show(); 
 			  
-			var resultStr = '<div class="accordion">'; 
+			let resultStr = '<div class="accordion">'; 
+			let effectSizesText = "Number of subjects N = " + sampleSize + " estimated using experimental simulations to reach more than 80% statistical power."; 
+			
 
-			var text = "The statistical power (the probability that the test correctly rejects the null hypothesis) of a regression depends on the sample size (the number of participants per condition), effect size, and degrees of freedom. The null hypothesis is that none of the independent variables (in a regression called <i>coefficients</i> or <i>predictors</i> explain any of the variability."
+			text = "The statistical power (the probability that the test correctly rejects the null hypothesis) of a regression depends on the sample size (typically the number of participants per condition), effect size, and degrees of freedom. The null hypothesis is that none of the independent variables (in a regression called <i>coefficients</i> or <i>predictors</i> explain any of the variability."
  
-			resultStr += '<div class="accordion-item" id="accordionREGRESSIONES"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseREGRESSIONES" aria-controls="accordionREGRESSIONES"><h6 class="accordion-header">' + getDataTypeIcon("H") + ' Simulated Regression Power and Effect Sizes</h6></button><div id="collapseREGRESSIONES" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne"><div class="accordion-body bg-light" )><p>' + text + '</p><p><table id="powerRegressionOutputTable" class="table-striped table table-bordered table-hover"><thead><tr><th data-field="_row" class="th-sm"><strong >Regression parameter</strong></th><th data-field="value" class="th-sm"><strong >Value</strong></th></tr></thead><tbody>' + tableBody + '</tbody></table></p></div></div></div>'; 		 
+			resultStr += '<div class="accordion-item" id="accordionREGRESSIONES"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseREGRESSIONES" aria-controls="accordionREGRESSIONES"><h6 class="accordion-header">' + getDataTypeIcon("H") + ' Simulated Regression Power and Effect Sizes</h6></button><div id="collapseREGRESSIONES" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne"><div class="accordion-body bg-light" )><p>' + text + '</p><p><table id="powerRegressionOutputTable" class="table-striped table table-bordered table-hover"><thead><tr><th data-field="_row" class="th-sm"><strong >Regression parameter</strong></th><th data-field="value" class="th-sm"><strong >Value</strong></th></tr></thead><tbody>' + tableBody + '</tbody></table><br /><p>' + effectSizesText + '</p></div></div></div>';	 
 			
 			resultStr+='</div>';
 			$("#power").append(resultStr); 
@@ -761,11 +862,11 @@
 		function showANOVAPowerAndEffectSizes(){
 			$("#rowES").show();
 			  
-			var resultStr = '<div class="accordion">';
-			  
-			var effectSizesText = "Initial effect sizes: Cohen's <i>d</i>: " + getEffectSized(parseFloat($("#meanDeltaInputId").val()), parseFloat( $("#varianceInputId").val()), sampleSize).toFixed(3) + " Cohen's <i>f</i>: " + getEffectSizef(parseFloat($("#meanDeltaInputId").val()), parseFloat($("#varianceInputId").val()), sampleSize).toFixed(3);
+			let resultStr = '<div class="accordion">';
+			let simulationsOverall = Math.ceil(simulations * (sampleSize / studyDesign.allConditions.length));
+			let effectSizesText = "Number of subjects N = " + sampleSize + " estimated using " + simulationsOverall + " experimental simulations to reach more than 80% statistical power."; 
 			
-			var text = "The statistical power (the probability that the test correctly rejects the null hypothesis) depends on the sample size (the number of participants per condition). Based on Lehr's Rule of 16, this tool also estimates the required sample size to complete your factorial design. Therefore, your statistical power can vary from the initial effect sizes. The simulated power of your IVs is listed below. Typically, between-subject IVs have a lower statistical power than within-subject variables."
+			let text = "The statistical power (the probability that the test correctly rejects the null hypothesis) depends on the sample size (typically the number of participants per condition). Based on power analysis, this tool simulates results and the required sample size to complete your factorial design. Therefore, your statistical power can vary from the initial effect sizes. The simulated power of your IVs is listed below. Typically, between-subject IVs have a lower statistical power than within-subject variables."
  
 			resultStr += '<div class="accordion-item" id="accordionANOVAES"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseANOVAES" aria-controls="accordionANOVAES"><h6 class="accordion-header">' + getDataTypeIcon("H") + ' Simulated Statistical Power, Main and Interaction Effect Sizes</h6></button><div id="collapseANOVAES" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne"><div class="accordion-body bg-light" )><p>' + text + '</p><table id="powerOutputTable" class="table-striped"><thead><tr><th data-field="_row" class="th-sm"><strong >Independent Variable(s)</strong></th><th data-field="power" class="th-sm"><strong >Statistical Power in %</strong></th><th data-field="partial_eta_squared" class="th-sm"><strong >Effect Size (<i>&eta;<sub>p</sub><sup>2</sup></i>)</strong></th><th data-field="cohen_f" class="th-sm"><strong>Effect Size (Cohen\'s <i>f</i>)</strong></th></tr></thead></table><br /><p>' + effectSizesText + '</p></div></div></div>';
 			resultStr += '</div>';
@@ -777,7 +878,7 @@
 		function showExperimentalDesign(){ 
 			$("#rowED").show();
 			  
-			var resultStr = '<div class="accordion">';
+			let resultStr = '<div class="accordion">';
 
 			if(studyDesign.betweenIVs.length > 0) {  
 				resultStr += '<div class="accordion-item" id="accordionBetween"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBetween" aria-controls="accordionBetween"><h6 class="accordion-header">' + getDataTypeIcon("M") + ' Assignment of conditions for your between-subject IVs (subjects are <i>split</i> into groups of your conditions)</h6></button><div id="collapseBetween" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne"><div class="accordion-body bg-light">Draw a random sample from a group or assign your subjects randomly and equally to each of the following ones: ' + arrayToDesignSequence(studyDesign.betweenConditions, "between", studyDesign.samples) + 'Please note that variance of measures from between-subject designs can be quite high. Please consider multiple task repetitions, equal balancing of groups, and as many samples as possible for these conditions (examples see above). In between-subject designs, the subjects are generally blind to the other conditions.</div></div></div>'; 
@@ -810,16 +911,16 @@
 		function showStatisticalTest(){
 			$("#rowST").show(); 
 			$("#rowWAIT").text("");
-			var resultStr = ""; 
-			var withinIVs = getItemsInArray(studyDesign.IVs, "within", "within");
-			var betweenIVs = getItemsInArray(studyDesign.IVs, "within", "between");
-			var nominalIVs = getItemsInArray(studyDesign.IVs, "type", "N");   
+			let resultStr = ""; 
+			let withinIVs = getItemsInArray(studyDesign.IVs, "within", "within");
+			let betweenIVs = getItemsInArray(studyDesign.IVs, "within", "between");
+			let nominalIVs = getItemsInArray(studyDesign.IVs, "type", "N");   
 			
 			if(studyDesign.MANOVA) resultStr += '<div class="accordion-item" id="accordionMANOVA"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMANOVA"  aria-controls="accordionMANOVA"><h6 class="accordion-header">' + getDataTypeIcon("M") + ' Inferential statistics requires a ' + number2words(studyDesign.IVs.length) + '-factorial ' + ((withinIVs.length >= 1 && betweenIVs.length >= 1) ? 'mixed-design ' : ' ') + 'MANOVA</h6></button><div id="collapseMANOVA" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne"><div class="accordion-body bg-light"><strong>Statistical test:</strong></br><code>model <- manova(cbind(' + getNamesFromArray(studyDesign.DVs, ", ", "name").slice(0, -2) + ') ~ ' + getNamesFromArray(studyDesign.IVs, " * ", "name").slice(0, -2) + ', data = data)<br />summary(model)<br />summary.aov(model)</code></br>for DVs that are significant (p &#8804; .05) you can perform univariate tests (see below)</div></div></div>';
 			
 			if(studyDesign.DVs.length > 0 && studyDesign.IVs.length > 0) {
 				$.each(studyDesign.DVs, function(i) { 
-					var testStr = "";   
+					let testStr = "";   
 					
 					function generateAccordionHeader(i, name, statisticalTest, type) {
 						return '<div class="accordion-item" id="accordion' + i +'"><button class="accordion-button collapsed " type="button" data-bs-toggle="collapse" data-bs-target="#collapse' + i +'" aria-controls="accordion' + i +'"><h6 class="accordion-header">' + getDataTypeIcon(type) + ' ' + studyDesign.DVs[i].name + ': ' + statisticalTest + '</h6></button><div id="collapse' + i +'" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne"><div class="accordion-body bg-light">';
@@ -843,11 +944,11 @@
 					}
 					
 					if(withinIVs.length >= 1 && betweenIVs.length >= 1) {  
-						var parametricTestStr = generateCode('Your statistical test for parametric data', 'The test provided by the <code>rstatix</code>-package automatically applies Greenhouse-Geisser correction to your within-subjects IVs violating the sphericity assumption (when Mauchly\'s test p-value is significant, p &#8804; 0.05).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID,  between = c(' + getNamesFromArray(betweenIVs, ", ", "name").slice(0, -2) + '), within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + '))</br>get_anova_table(aov, correction = "auto")');
+						let parametricTestStr = generateCode('Your statistical test for parametric data', 'The test provided by the <code>rstatix</code>-package automatically applies Greenhouse-Geisser correction to your within-subjects IVs violating the sphericity assumption (when Mauchly\'s test p-value is significant, p &#8804; 0.05).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID,  between = c(' + getNamesFromArray(betweenIVs, ", ", "name").slice(0, -2) + '), within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + '))</br>get_anova_table(aov, correction = "auto")');
 						parametricTestStr += generateCode('The post hoc test for parametric data', 'Post hoc tests of interaction effects can computed with the <code>testInteraction()</code> procedure of the <code>phia</code> package in R. Such results are difficult to interpret. With main effects only you can perform pairwise comparisons using t-tests, e.g.:','library(rstatix)<br />t_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + withinIVs[0].name + ')');
 						parametricTestStr += generateCode('Evaluate your effect size','To determine your main and interaction effect size <i>partial eta-squared</i> of a multi-factorial ANOVA you can use the following interpretation: 0.01 - 0.01 (small effect), 0.01 - 0.06 (moderate effect) and 0.06 - 0.14 (large effect).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID,  between = c(' + getNamesFromArray(betweenIVs, ", ", "name").slice(0, -2) + '), within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + '))</br>get_anova_table(aov, correction = "auto")');
 						
-						var nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'The test by the <code>ARTool</code>-package performs a non-parametric ' + number2words(studyDesign.IVs.length) + '-factorial mixed-design ART-ANOVA.','library(ARTool)<br />art <- art(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + getNamesFromArray(studyDesign.IVs, " * ", "name").slice(0, -2) + ' + (1|SubjectID) )</br>anova(art)');	
+						let nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'The test by the <code>ARTool</code>-package performs a non-parametric ' + number2words(studyDesign.IVs.length) + '-factorial mixed-design ART-ANOVA.','library(ARTool)<br />art <- art(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + getNamesFromArray(studyDesign.IVs, " * ", "name").slice(0, -2) + ' + (1|SubjectID) )</br>anova(art)');	
 						nonparametricTestStr += generateCode('The post hoc test for non-parametric data', 'Post hoc tests of interaction effects can computed with the <code>testInteraction()</code> procedure of the <code>phia</code> package in R. Such results are difficult to interpret. With main effects only you can perform pairwise comparisons using Wilcoxon signed-rank tests, e.g.:','library(rstatix)<br />wilcox_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + withinIVs[0].name + ', paired=TRUE)');	
 						nonparametricTestStr += generateCode('Evaluate your effect size','Save your non-parametric ART-ANOVA model above. Add a new column with (SS/SS+SStotal) deriving your main and interaction effect size <i>partial eta-squared</i> and use the following interpretation: 0.01 - 0.01 (small effect), 0.01 - 0.06 (moderate effect) and 0.06 - 0.14 (large effect).','anova.art <- anova(art)<br />anova.art$eta.sq.part = anova.art$`Sum Sq`/(anova.art$`Sum Sq` + anova.art$`Sum Sq.res`)<br />anova.art');
 						
@@ -866,8 +967,8 @@
 					
 					if(withinIVs.length >= 1 && betweenIVs.length == 0 ) { 
 						if((withinIVs.length > 1 || withinIVs[0].levels.length > 2) && studyDesign.nonOrdinalIVs.length == 0) {
-							var parametricTestStr = "";
-							var nonparametricTestStr = "";
+							let parametricTestStr = "";
+							let nonparametricTestStr = "";
 							
 							parametricTestStr += generateCode('Your statistical test for parametric data', 'The test provided by the <code>rstatix</code>-package automatically applies Greenhouse-Geisser correction to your within-subjects IVs violating the sphericity assumption (when Mauchly\'s test p-value is significant, p &#8804; 0.05).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', wid = SubjectID, within = c(' + getNamesFromArray(withinIVs, ", ", "name").slice(0, -2) + '))</br>get_anova_table(aov, correction = "auto")');
 							parametricTestStr += generateCode('Your post hoc test for parametric data', 'Post hoc tests of interaction effects can computed with the <code>testInteraction()</code> procedure of the <code>phia</code> package in R. Such results are difficult to interpret. With main effects only you can perform pairwise comparisons using t-tests, e.g.:','library(rstatix)<br />t_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + withinIVs[0].name + ')');
@@ -900,14 +1001,14 @@
 								}
 							}
 						} else { 
-							var parametricTestStr = "";
-							var nonparametricTestStr = "";
+							let parametricTestStr = "";
+							let nonparametricTestStr = "";
 							
 							if(withinIVs[0].levels.length == 2){  
 								parametricTestStr += generateCode('Your statistical test for parametric data', 'Classic t-test between paired samples.','library(rstatix)<br />t_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = TRUE)');
 								parametricTestStr += generateCode('Evaluate your effect size', 'Effect sizes for paired (dependent) t-tests <i>d</i> poposed by Cohen, are: 0.1 - 0.2 (small effect), 0.2 - 0.5 (moderate effect) and 0.5 - 0.8 (large effect) (Cohen 1998, Navarro (2015)). This means that if two groups\' means don\'t differ by 0.2 standard deviations or more, the difference is trivial, even if it is statistically significant.','library(rstatix)<br />cohens_d(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = TRUE)');
 								
-								var nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'A non-parametric test between two paired (dependent) samples.','library(rstatix)<br />wilcox_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = TRUE)');  
+								let nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'A non-parametric test between two paired (dependent) samples.','library(rstatix)<br />wilcox_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = TRUE)');  
 								nonparametricTestStr += generateCode('Evaluate your effect size','The interpretation of the effect size of a non-parametric test between two paired (dependent) samples <i>r</i> is commonly: 0.1 - 0.3 (small effect), 0.3 - 0.5 (moderate effect) and > 0.5 (large effect).','library(rstatix)<br />wilcox_effsize(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = TRUE)');
 								
 								if(studyDesign.DVs[i].type == "R" || studyDesign.DVs[i].type == "I") {  // paired t-test  
@@ -919,10 +1020,10 @@
 									resultStr += nonparametricTestStr
 								}
 							} else {
-								var singleOrMultiples = studyDesign.nonOrdinalIVs.length > 1 ? "multivariate" : "single";
-								var parametricTestStr = generateCode('Your statistical test for parametric data', 'A ' + singleOrMultiples + ' linear regression','lm <- lm(' + studyDesign.DVs[i].name + ' ~ ' + getNamesFromArray(withinIVs, " + ", "name").slice(0, -2) + ', data = data)</br>summary(lm)'); 
+								let singleOrMultiples = studyDesign.nonOrdinalIVs.length > 1 ? "multivariate" : "single";
+								let parametricTestStr = generateCode('Your statistical test for parametric data', 'A ' + singleOrMultiples + ' linear regression','lm <- lm(' + studyDesign.DVs[i].name + ' ~ ' + getNamesFromArray(withinIVs, " + ", "name").slice(0, -2) + ', data = data)</br>summary(lm)'); 
 								
-								var nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'A ' + singleOrMultiples + ' Kendall-Theil nonparametric regression using the <code>mblm</code> package','mblm <- mblm(' + studyDesign.DVs[i].name + ' ~ ' + getNamesFromArray(withinIVs, " + ", "name").slice(0, -2) + ', data = data)</br>summary(mblm)');  
+								let nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'A ' + singleOrMultiples + ' Kendall-Theil nonparametric regression using the <code>mblm</code> package','mblm <- mblm(' + studyDesign.DVs[i].name + ' ~ ' + getNamesFromArray(withinIVs, " + ", "name").slice(0, -2) + ', data = data)</br>summary(mblm)');  
 								  
 								if(studyDesign.DVs[i].type == "R" || studyDesign.DVs[i].type == "I") { 
 									resultStr += generateAccordionHeader(i, studyDesign.DVs[i].name, "a " + singleOrMultiples + " linear regression", studyDesign.DVs[i].type);
@@ -938,11 +1039,11 @@
 					
 					if(withinIVs.length == 0 && betweenIVs.length >= 1) { 
 						if(betweenIVs.length > 1 || betweenIVs[0].levels.length > 2) {
-							var parametricTestStr = generateCode('Your statistical test for parametric data', 'The test provided by the <code>rstatix</code>-package performs a multi-factorial ANOVA of independent samples','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ',  between = c(' + getNamesFromArray(betweenIVs, ", ", "name").slice(0, -2) + '))</br>get_anova_table(aov)'); 
+							let parametricTestStr = generateCode('Your statistical test for parametric data', 'The test provided by the <code>rstatix</code>-package performs a multi-factorial ANOVA of independent samples','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ',  between = c(' + getNamesFromArray(betweenIVs, ", ", "name").slice(0, -2) + '))</br>get_anova_table(aov)'); 
 							parametricTestStr += generateCode('Your post hoc test for parametric data', 'Post hoc tests of interaction effects can computed with the <code>testInteraction()</code> procedure of the <code>phia</code> package in R. Such results are difficult to interpret. With main effects only you can perform pairwise comparisons using t-tests, e.g.:','library(rstatix)<br />t_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + betweenIVs[0].name + ')');
 							parametricTestStr += generateCode('Evaluate your effect size','To determine your main and interaction effect size <i>partial eta-squared</i> of a multi-factorial independent samples ANOVA you can use the following interpretation: 0.01 - 0.01 (small effect), 0.01 - 0.06 (moderate effect) and 0.06 - 0.14 (large effect).','library(rstatix)<br />aov <- anova_test(data = data, dv = ' + studyDesign.DVs[i].name + ', between = c(' + getNamesFromArray(betweenIVs, ", ", "name").slice(0, -2) + '), effect.size = "pes")</br>get_anova_table(aov)');
 							
-							var nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'The test by the <code>ARTool</code>-package performs a non-parametric ' + number2words(studyDesign.IVs.length) + '-factorial mixed-design ART-ANOVA.','library(ARTool)<br />art <- art(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + getNamesFromArray(studyDesign.IVs, " * ", "name").slice(0, -2) + '  )</br>anova(art)');
+							let nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'The test by the <code>ARTool</code>-package performs a non-parametric ' + number2words(studyDesign.IVs.length) + '-factorial mixed-design ART-ANOVA.','library(ARTool)<br />art <- art(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + getNamesFromArray(studyDesign.IVs, " * ", "name").slice(0, -2) + '  )</br>anova(art)');
 							nonparametricTestStr += generateCode('The post hoc test for non-parametric data', 'Post hoc tests of interaction effects can computed with the <code>testInteraction()</code> procedure of the <code>phia</code> package in R. Such results are difficult to interpret. With main effects only you can perform pairwise comparisons using Wilcoxon signed-rank tests, e.g.:','library(rstatix)<br />wilcox_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + betweenIVs[0].name + ')');	
 							nonparametricTestStr += generateCode('Evaluate your effect size','Save your non-parametric ART-ANOVA model above. Add a new column with (SS/SS+SStotal) deriving your main and interaction effect size <i>partial eta-squared</i> and use the following interpretation: 0.01 - 0.01 (small effect), 0.01 - 0.06 (moderate effect) and 0.06 - 0.14 (large effect).','anova.art <- anova(art)<br />anova.art$eta.sq.part = anova.art$`Sum Sq`/(anova.art$`Sum Sq` + anova.art$`Sum Sq.res`)<br />anova.art');
  
@@ -958,10 +1059,10 @@
 								resultStr += nonparametricTestStr; 
 							}
 						}  else { // independent t-test 
-							var parametricTestStr = generateCode('Your statistical test for parametric data', 'A classical t-test between two independent samples.','library(rstatix)<br />t_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = FALSE)');	
+							let parametricTestStr = generateCode('Your statistical test for parametric data', 'A classical t-test between two independent samples.','library(rstatix)<br />t_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = FALSE)');	
 							parametricTestStr += generateCode('Evaluate your effect size','Effect sizes for independent t-tests <i>d</i> poposed by Cohen, are: 0.1 - 0.2 (small effect), 0.2 - 0.5 (moderate effect) and 0.5 - 0.8 (large effect) (Cohen 1998, Navarro (2015)). This means that if two groups\' means don\'t differ by 0.2 standard deviations or more, the difference is trivial, even if it is statistically significant.','library(rstatix)<br />cohens_d(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = FALSE)');
 							
-							var nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'A non-parametric test between two independent samples.','library(rstatix)<br />wilcox_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = FALSE)');  
+							let nonparametricTestStr = generateCode('Your statistical test for non-parametric data', 'A non-parametric test between two independent samples.','library(rstatix)<br />wilcox_test(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = FALSE)');  
 							nonparametricTestStr += generateCode('Evaluate your effect size','The interpretation of the effect size of a non-parametric test between two independent samples <i>r</i> is commonly: 0.1 - 0.3 (small effect), 0.3 - 0.5 (moderate effect) and > 0.5 (large effect).','library(rstatix)<br />wilcox_effsize(data = data, ' + studyDesign.DVs[i].name + ' ~ ' + studyDesign.IVs[0].name + ', paired = FALSE)');
 							
 							if(studyDesign.DVs[i].type == "R" || studyDesign.DVs[i].type == "I") {  
@@ -982,9 +1083,9 @@
 		} 
 		
 		function arrayToDesignSequence(array, type, num) {
-			var str = '<div class="table-responsive"><table class="table" ">';
+			let str = '<div class="table-responsive"><table class="table" ">';
 			str += '<thead><tr>';
-			for(var i = 0; i < array.length; i++) {
+			for(let i = 0; i < array.length; i++) {
 				if(i == 0) str += '<th scope="col"><strong>Subject</strong></th>';
 				if(array.length > 10) str += '<th scope="col"><strong>Cond. ' + (i + 1) + ' </strong></th>';
 				if(array.length <= 10) str += '<th scope="col"><strong>Condition ' + (i + 1) + ' </strong></th>';
@@ -992,12 +1093,12 @@
 			str += '</tr></thead><tbody>';
 			
 			if(type == "latinSquare"){
-				var nb_rows = array.length;
+				let nb_rows = array.length;
 				if (array.length % 2 != 0) nb_rows *= 2; 
 				
-				for(var n = 0; n < nb_rows; n++) {
+				for(let n = 0; n < nb_rows; n++) {
 					str += '<tr>';
-					for(var i = 0; i < array.length; i++) {
+					for(let i = 0; i < array.length; i++) {
 						if(i == 0) str += '<th scope="row"><strong>' + (n + 1) + '</strong></th>';
 						str += '<th><small>' + balancedLatinSquare(array, n)[i] + '</small></th>'; 
 					} 
@@ -1006,9 +1107,9 @@
 			}
 			
 			if(type == "permutations"){
-				for(var n = 0; n < permutations(array).length; n++) {
+				for(let n = 0; n < permutations(array).length; n++) {
 					str += '<tr>';
-					for(var i = 0; i < array.length; i++) {
+					for(let i = 0; i < array.length; i++) {
 						if(i == 0) str += '<th scope="row"><strong>' + (n + 1) + '</strong></th>'; 
 						str += '<th><small>' + permutations(array)[n][i] + '</small></th>'; 
 					}
@@ -1017,9 +1118,9 @@
 			}
 			
 			if(type == "shuffle"){
-				for(var n = 0; n < num; n++) {
+				for(let n = 0; n < num; n++) {
 					str += '<tr>';
-					for(var i = 0; i < array.length; i++) {
+					for(let i = 0; i < array.length; i++) {
 						if(i == 0) str += '<th scope="row"><strong>' + (n + 1) + '</strong></th>'; 
 						str += '<th><small>' + shuffle(array, n)[i] + '</small></th>'; 
 					}
@@ -1029,27 +1130,27 @@
 			
 			if(type == "between"){ 
 				str += '<tr>';
-				for(var i = 0; i < array.length; i++) {
+				for(let i = 0; i < array.length; i++) {
 					if(i == 0) str += '<th scope="row"><strong>Name</strong></th>'; 
 					str += '<th><small>' + array[i] + '</small></th>'; 
 				}
 				str += '</tr>'; 
-				for(var n = 1; n < 4; n++) {
+				for(let n = 1; n < 4; n++) {
 					str += '<tr>';
-					for(var i = 0; i < array.length; i++) {
+					for(let i = 0; i < array.length; i++) {
 						if(i == 0) str += '<th scope="row"><strong>Samples (N = ' + num * n + ')</strong></th>'; 
 						str += '<th><small>' + num * n / array.length + ' subjects </small></th>'; 
 					} 
 					str += '</tr>'; 
 				}
 				str += '<tr>'; 
-				for(var i = 0; i < array.length; i++) {
+				for(let i = 0; i < array.length; i++) {
 					if(i == 0) str += '<th scope="row"><strong>...</strong></th>'; 
 					str += '<th><small>...</small></th>'; 
 				}
 				str += '</tr>'; 
 				str += '<tr>'; 
-				for(var i = 0; i < array.length; i++) {
+				for(let i = 0; i < array.length; i++) {
 					if(i == 0) str += '<th scope="row"><strong>Samples in %</strong></th>'; 
 					str += '<th><small>' + ( 100 / array.length ) + '%</small></th>'; 
 				}
@@ -1069,7 +1170,7 @@
 		}
 		
 		function getNamesFromArray(array, separator, name) {
-			var str = ""; 
+			let str = ""; 
 			$.each(array, function(i){
 				if(name != null) str += array[i][name];
 				else str += array[i]; str += separator; 
@@ -1078,7 +1179,7 @@
 		}
 		
 		function getItemsInArray(array, variable, name) {
-			var filteredArray = [];
+			let filteredArray = [];
 			$.each(array, function(i){ if(array[i][variable] == name) filteredArray.push(array[i]); });
 			return filteredArray;
 		}
@@ -1087,8 +1188,8 @@
 			$(slider).prop("step", steps);
 			$(slider).prop("min", min);
 			$(slider).prop("max", max);
-			if(!manualSubjectUpdate) $(slider).val(val);
-			if(!manualSubjectUpdate) $(label).val(val);  
+			if(!manualSampleSizeUpdate) $(slider).val(val);
+			if(!manualSampleSizeUpdate) $(label).val(val);  
 			return $(slider).val();
 		}
 		
@@ -1113,30 +1214,59 @@
 		
 		function getSampleSize(cv, pc, n, a) { 
 			if (a == 0) a = 1;
-			var Nb = (16 * (Math.pow(cv, 2) / (Math.pow(Math.log(1 - pc), 2))));
-			var Nw = Nb * ((1 - 0.5) / a)
+			let Nb = (16 * (Math.pow(cv, 2) / (Math.pow(Math.log(1 - pc), 2))));
+			let Nw = Nb * ((1 - 0.5) / a)
 			return Nw;
 			// https://stats.stackexchange.com/questions/11131/sample-size-formula-for-an-f-test#:~:text=Lehr's%20formula%20for%20t%2Dtests,sided%20or%20two%20sided%20test.
 		}
-		
-		function getEffectSizedz(delta, sd, N, corr) {   
-			return (1 - getEffectSized(delta, sd, N)) / Math.sqrt(2 * ( 1 - corr)); 
+
+		function getLehrsRule(delta, sd) { 
+			let d = getCohensD(delta, sd);
+			return 16 * (sd * sd) / (delta * delta);
 		}
 		
-		function getEffectSized(delta, sd, N) {   
-			pooledSD = Math.sqrt(((N - 1) * sd * sd + (N - 1) * sd * sd) / (N + N - 2));
+		function getHedgesG(delta, sd, N, corr) {   
+			return (1 - getHedgesG(delta, sd, N)) / Math.sqrt(2 * ( 1 - corr)); 
+		}
+		
+		function getCohensD(delta, sd) {    
+			return delta / Math.sqrt((sd * sd + sd *sd)/2);
+		} 
+		
+		function getCohensF(delta, sd) {   
+			let d = getCohensD(delta, sd);
+			return d / 2; 
+		} 
+		
+		function getPartialEtaSquared(delta, sd) { 
+			let d = getCohensD(delta, sd); 
+			return (d * d) / ((d * d) + 2);
+		}
+		
+		function roundUpToNextDivisible(value, divisor) {
+			if (divisor === 0) {
+				return 'Divisor cannot be zero';
+			}
+			return Math.ceil(value / divisor) * divisor;
+		}
+
+		function estimateSampleSizeFor80PowerWithConditions(effectSize, numberOfConditions) { 
+			const zAlpha = 1.96; // Z-score for 95% confidence
+			const zBeta = 0.84; // Z-score for 80% power
+			let sampleSizePerGroup = ((zAlpha + zBeta) ** 2) / (effectSize ** 2); 
+
+			return roundUpToNextDivisible(sampleSizePerGroup, numberOfConditions); // Rounding up to the nearest whole number
+		}
+		
+		function getHedgesG(delta, sd, N) {   
+			pooledSD = Math.sqrt(((N - 1) * (sd * sd) + (N - 1) * (sd * sd)) / (N + N - 2));
 			return delta / pooledSD;
 		} 
 		
 		function getEffectSizef(delta, sd, N) {   
-			var d = getEffectSized(delta, sd, N)
+			let d = getHedgesG(delta, sd, N)
 			return d / Math.sqrt(2); 
-		} 
-		
-		function getPartialEtaSquared(delta, sd, N) { 
-			var f = getEffectSizef(delta, sd, N);
-			return f * f / (f * f + 1);
-		}
+		}  
 		
 		function interpretCohensd(d) {  
 			if (d < 0.2) {
@@ -1192,8 +1322,8 @@
 		
 		function shuffle(array, seed) {
 			Math.seedrandom(seed);
-			var j, tmp;
-			for (var i = array.length - 1; i > 0; i--) {
+			let j, tmp;
+			for (let i = array.length - 1; i > 0; i--) {
 				j = Math.floor(Math.random() * (i + 1));
 				tmp = array[i];
 				array[i] = array[j];
@@ -1203,13 +1333,13 @@
 		}
 		
 		function permutations(xs, n) {
-			var result = [];
-			for (var i = 0; i < xs.length; i = i + 1) {
-				var rest = permutations(xs.slice(0, i).concat(xs.slice(i + 1)));
+			let result = [];
+			for (let i = 0; i < xs.length; i = i + 1) {
+				let rest = permutations(xs.slice(0, i).concat(xs.slice(i + 1)));
 				if(!rest.length) {
 					result.push([xs[i]])
 				} else {
-					for(var j = 0; j < rest.length; j = j + 1) {
+					for(let j = 0; j < rest.length; j = j + 1) {
 						result.push([xs[i]].concat(rest[j]))
 					}
 				}
@@ -1218,9 +1348,9 @@
 		} 
 		
 		function balancedLatinSquare(array, subjectId) {
-			var result = []; 
-			for (var i = 0, j = 0, h = 0; i < array.length; ++i) {
-				var val = 0;
+			let result = []; 
+			for (let i = 0, j = 0, h = 0; i < array.length; ++i) {
+				let val = 0;
 				if (i < 2 || i % 2 != 0) {
 					val = j++;
 				} else {
@@ -1228,7 +1358,7 @@
 					++h;
 				}
 
-				var idx = (val + subjectId) % array.length;
+				let idx = (val + subjectId) % array.length;
 				result.push(array[idx]);
 			}
 
@@ -1321,10 +1451,10 @@
 		function generate() { }  
 
 		function number2words(n){
-			var num = "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split(" ");
-			var tens = "twenty thirty forty fifty sixty seventy eighty ninety".split(" ");
+			let num = "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split(" ");
+			let tens = "twenty thirty forty fifty sixty seventy eighty ninety".split(" ");
 			if (n < 20) return num[n];
-			var digit = n%10;
+			let digit = n%10;
 			if (n < 100) return tens[~~(n/10)-2] + (digit? "-" + num[digit]: "");
 			if (n < 1000) return num[~~(n/100)] +" hundred" + (n%100 == 0? "": " and " + number2words(n%100));
 			return number2words(~~(n/1000)) + " thousand" + (n%1000 != 0? " " + number2words(n%1000): "");
